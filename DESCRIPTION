@@ -1,4 +1,4 @@
-Package: euiss
+Package: euissR
 Type: Package
 Title: EUISS Visual Identity for Ggplot2
 Version: 0.1.0
