@@ -17,8 +17,9 @@ height_brief <- 258.233       # full page height in brief
 
 # text
 # windowsFonts(sg = windowsFont("Segoe UI"))
-# txt_family <- "PT Sans Narrow"
 # txt_family <- "Bahnschrift"
+# txt_family <- "PT Sans Narrow"
+# txt_family <- "ptsansnarrow"  # text family
 txt_family <- "mono"          # text family
 txt_bold <- "bold"            # fontface
 txt_height <- .85             # lineheight
