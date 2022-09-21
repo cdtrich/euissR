@@ -5,15 +5,24 @@
 \title{Custom ggplot2::geom_text()}
 \usage{
 geom_text_euiss(
-  lineheight = 0.85,
+  mapping = NULL,
+  data = NULL,
+  col = col_axis,
   family = txt_family,
   size = txt_label,
   hjust = "left",
+  lineheight = 0.85,
+  show.legend = NA,
+  inherit.aes = TRUE,
   ...
 )
 }
 \arguments{
-\item{lineheight}{text line height}
+\item{mapping}{Set of aesthetic mappings created by \code{aes()} or \code{aes_()}. If specified and \code{inherit.aes = TRUE} (the default), it is combined with the default mapping at the top level of the plot. You must supply \code{mapping} if there is no plot mapping.}
+
+\item{data}{The data to be displayed in this layer.}
+
+\item{col}{text color}
 
 \item{family}{text family}
 
@@ -21,15 +30,24 @@ geom_text_euiss(
 
 \item{hjust}{text alignment}
 
-\item{...}{other arguments that can be passed to `ggplot2::geom_text()`}
+\item{lineheight}{text line height}
+
+\item{show.legend}{logical. Should this layer be included in the legends? \code{NA}, the default, includes if any aesthetics are mapped. \code{FALSE} never includes, and \code{TRUE} always includes. It can also be a named logical vector to finely select the aesthetics to display.}
+
+\item{inherit.aes}{If \code{FALSE}, overrides the default aesthetics, rather than combining with them. This is most useful for helper functions that define both data and aesthetics and shouldn't inherit behavior from the default plot specification, e.g. \code{borders()}.}
+
+\item{...}{other arguments that can be passed to \code{ggplot2::geom_text()}}
 }
 \value{
-Pre-styled `geom_text()`
+Pre-styled \code{geom_text()}
 }
 \description{
 Custom ggplot2::geom_text()
 }
 \examples{
-ggplot2::ggplot(data = mtcars, ggplot2::aes(disp, wt, label = wt)) + 
-  geom_text_euiss()
+require(dplyr)
+require(ggplot2)
+ggplot2::ggplot(data = mtcars) +
+  ggplot2::aes(disp, wt) + 
+  geom_text_euiss(ggplot2::aes(label = rownames(mtcars)))
 }

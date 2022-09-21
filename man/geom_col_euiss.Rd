@@ -4,20 +4,42 @@
 \alias{geom_col_euiss}
 \title{Custom ggplot2::geom_col()}
 \usage{
-geom_col_euiss(width = 0.25, ...)
+geom_col_euiss(
+  mapping = NULL,
+  data = NULL,
+  fill = teal,
+  col = NA,
+  width = 0.25,
+  show.legend = NA,
+  inherit.aes = TRUE,
+  ...
+)
 }
 \arguments{
+\item{mapping}{Set of aesthetic mappings created by \code{aes()} or \code{aes_()}. If specified and \code{inherit.aes = TRUE} (the default), it is combined with the default mapping at the top level of the plot. You must supply \code{mapping} if there is no plot mapping.}
+
+\item{data}{The data to be displayed in this layer.}
+
+\item{fill}{fill color}
+
+\item{col}{column outline}
+
 \item{width}{column width}
 
-\item{...}{other arguments that can be passed to `ggplot2::geom_col()`}
+\item{show.legend}{logical. Should this layer be included in the legends? \code{NA}, the default, includes if any aesthetics are mapped. \code{FALSE} never includes, and \code{TRUE} always includes. It can also be a named logical vector to finely select the aesthetics to display.}
+
+\item{inherit.aes}{If \code{FALSE}, overrides the default aesthetics, rather than combining with them. This is most useful for helper functions that define both data and aesthetics and shouldn't inherit behaviour from the default plot specification, e.g. \code{borders()}.}
+
+\item{...}{other arguments that can be passed to \code{ggplot2::geom_col()}}
 }
 \value{
-Pre-styled `geom_col()`
+Pre-styled \code{geom_col()}
 }
 \description{
 Custom ggplot2::geom_col()
 }
 \examples{
-ggplot2::ggplot(data = mtcars, ggplot2::aes(cyl, hp, fill = base::factor(gear))) + 
+ggplot2::ggplot(data = mtcars) +
+  ggplot2::aes(cyl, hp, fill = base::factor(gear)) +
   geom_col_euiss()
 }

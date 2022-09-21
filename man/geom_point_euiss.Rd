@@ -4,21 +4,39 @@
 \alias{geom_point_euiss}
 \title{Custom ggplot2::geom_point()}
 \usage{
-geom_point_euiss(col = teal, fill = NA, size = 2, shape = 21, ...)
+geom_point_euiss(
+  mapping = NULL,
+  data = NULL,
+  shape = 21,
+  size = 2,
+  col = teal,
+  fill = NA,
+  show.legend = NA,
+  inherit.aes = TRUE,
+  ...
+)
 }
 \arguments{
-\item{col}{point color}
+\item{mapping}{Set of aesthetic mappings created by \code{aes()} or \code{aes_()}. If specified and \code{inherit.aes = TRUE} (the default), it is combined with the default mapping at the top level of the plot. You must supply \code{mapping} if there is no plot mapping.}
 
-\item{fill}{point fill}
+\item{data}{The data to be displayed in this layer.}
 
-\item{size}{point size}
+\item{shape}{type of shape}
 
-\item{shape}{any shape value that can be passed to `ggplot2::geom_point()`}
+\item{size}{shape size}
 
-\item{...}{other arguments that can be passed to `ggplot2::geom_point()`}
+\item{col}{shape color}
+
+\item{fill}{shape fill}
+
+\item{show.legend}{logical. Should this layer be included in the legends? \code{NA}, the default, includes if any aesthetics are mapped. \code{FALSE} never includes, and \code{TRUE} always includes. It can also be a named logical vector to finely select the aesthetics to display.}
+
+\item{inherit.aes}{If \code{FALSE}, overrides the default aesthetics, rather than combining with them. This is most useful for helper functions that define both data and aesthetics and shouldn't inherit behaviour from the default plot specification, e.g. \code{borders()}.}
+
+\item{...}{other arguments that can be passed to \code{ggplot2::geom_point()}}
 }
 \value{
-Pre-styled `geom_point()`
+Pre-styled \code{geom_point()}
 }
 \description{
 Custom ggplot2::geom_point()

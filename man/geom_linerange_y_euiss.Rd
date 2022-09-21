@@ -2,25 +2,57 @@
 % Please edit documentation in R/geom_linerange_y_euiss.R
 \name{geom_linerange_y_euiss}
 \alias{geom_linerange_y_euiss}
-\title{Custom vertical ggplot2::geom_linerange()}
+\title{Custom ggplot2::geom_linerange_y()}
 \usage{
-geom_linerange_y_euiss(col = teal, size = lwd_line, ...)
+geom_linerange_y_euiss(
+  mapping = NULL,
+  data = NULL,
+  ymin = 0,
+  shape = 21,
+  linewidth = lwd_line,
+  size = 2,
+  col = teal,
+  fill = "white",
+  show.legend = NA,
+  inherit.aes = TRUE,
+  ...
+)
 }
 \arguments{
-\item{col}{line color}
+\item{mapping}{Set of aesthetic mappings created by \code{aes()} or \code{aes_()}. If specified and \code{inherit.aes = TRUE} (the default), it is combined with the default mapping at the top level of the plot. You must supply \code{mapping} if there is no plot mapping.}
 
-\item{size}{line width}
+\item{data}{The data to be displayed in this layer.}
 
-\item{...}{other arguments that can be passed to `ggplot2::geom_linerange()`}
+\item{ymin}{y-baseline}
+
+\item{shape}{type of shape}
+
+\item{linewidth}{range line width}
+
+\item{size}{shape size}
+
+\item{col}{line/shape color}
+
+\item{fill}{shape fill}
+
+\item{show.legend}{logical. Should this layer be included in the legends? \code{NA}, the default, includes if any aesthetics are mapped. \code{FALSE} never includes, and \code{TRUE} always includes. It can also be a named logical vector to finely select the aesthetics to display.}
+
+\item{inherit.aes}{If \code{FALSE}, overrides the default aesthetics, rather than combining with them. This is most useful for helper functions that define both data and aesthetics and shouldn't inherit behaviour from the default plot specification, e.g. \code{borders()}.}
+
+\item{...}{other arguments that can be passed to \code{ggplot2::geom_linerange_y()}}
 }
 \value{
-Pre-styled `geom_linerange()`
+Pre-styled \code{geom_linerange_y()}
 }
 \description{
-Custom vertical ggplot2::geom_linerange()
+Custom ggplot2::geom_linerange_y()
 }
 \examples{
-ggplot2::ggplot(data = mtcars, ggplot2::aes(x = wt, y = hp, ymax = hp)) + 
+require(dplyr)
+mtcars \%>\% 
+  dplyr::group_by(gear, cyl) \%>\% 
+  dplyr::summarize(wt = sum(wt)) \%>\% 
+  ggplot2::ggplot(ggplot2::aes(x = cyl, y = wt, ymax = wt, group = gear)) + 
   geom_linerange_y_euiss() + 
-  geom_point_euiss()
+  ggplot2::facet_wrap(~gear)
 }
