@@ -11,7 +11,9 @@ geom_text_euiss(
   family = txt_family,
   size = txt_label,
   hjust = "left",
+  vjust = 0,
   lineheight = 0.85,
+  nudge_x = NA,
   show.legend = NA,
   inherit.aes = TRUE,
   ...
@@ -28,9 +30,13 @@ geom_text_euiss(
 
 \item{size}{text size}
 
-\item{hjust}{text alignment}
+\item{hjust}{horizontal text alignment, defaults to 1/20 of the x-range}
+
+\item{vjust}{\code{numeric} text alignment; defaults to 0 (bottom)}
 
 \item{lineheight}{text line height}
+
+\item{nudge_x}{horizontal adjustment}
 
 \item{show.legend}{logical. Should this layer be included in the legends? \code{NA}, the default, includes if any aesthetics are mapped. \code{FALSE} never includes, and \code{TRUE} always includes. It can also be a named logical vector to finely select the aesthetics to display.}
 
@@ -49,5 +55,6 @@ require(dplyr)
 require(ggplot2)
 ggplot2::ggplot(data = mtcars) +
   ggplot2::aes(disp, wt) + 
+  geom_point_euiss() +
   geom_text_euiss(ggplot2::aes(label = rownames(mtcars)))
 }

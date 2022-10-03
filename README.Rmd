@@ -45,9 +45,9 @@ library(euissR)
 
 mtcars %>% 
   ggplot2::ggplot() +
-  ggplot2::aes(wt, mpg, label = wt) +
+  ggplot2::aes(wt, mpg) +
   geom_point_euiss() +
-  geom_text_euiss()
+  geom_text_euiss(ggplot2::aes(label = wt))
 ```
 
 You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/v1/examples>.
@@ -59,5 +59,5 @@ If you include plots, don't forget to commit and push the resulting figure files
 euissR declares PT Sans Narrow as the default font as part of its custom
 ggplot2 theme. It can be downloaded from [google fonts](https://fonts.google.com/specimen/PT+Sans+Narrow). If you don't want to 
 use this font, set the `txt_family` value in `fonts.R` to another font name 
-(one installed on your system), or simply delete the file and load the package
+(one installed on your system), or delete the file and load the package
 locally. 

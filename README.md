@@ -29,21 +29,23 @@ devtools::install_github("cdtrich/euissR")
 This is a basic example which shows you how to solve a common problem:
 
 ``` r
-library(tidyverse)
-#> -- Attaching packages --------------------------------------- tidyverse 1.3.1 --
-#> v ggplot2 3.3.5     v purrr   0.3.4
-#> v tibble  3.1.6     v dplyr   1.0.8
-#> v tidyr   1.2.0     v stringr 1.4.0
-#> v readr   2.1.2     v forcats 0.5.1
-#> -- Conflicts ------------------------------------------ tidyverse_conflicts() --
-#> x dplyr::filter() masks stats::filter()
-#> x dplyr::lag()    masks stats::lag()
+library(dplyr)
+#> 
+#> Attaching package: 'dplyr'
+#> The following objects are masked from 'package:stats':
+#> 
+#>     filter, lag
+#> The following objects are masked from 'package:base':
+#> 
+#>     intersect, setdiff, setequal, union
+library(ggplot2)
 library(euissR)
 
 mtcars %>% 
-  ggplot(aes(wt, mpg, label = wt)) +
+  ggplot2::ggplot() +
+  ggplot2::aes(wt, mpg) +
   geom_point_euiss() +
-  geom_text_euiss()
+  geom_text_euiss(ggplot2::aes(label = wt))
 ```
 
 <img src="man/figures/README-example-1.png" width="100%" />
@@ -63,5 +65,5 @@ euissR declares PT Sans Narrow as the default font as part of its custom
 ggplot2 theme. It can be downloaded from [google
 fonts](https://fonts.google.com/specimen/PT+Sans+Narrow). If you don’t
 want to use this font, set the `txt_family` value in `fonts.R` to
-another font name (one installed on your system), or simply delete the
-file and load the package locally.
+another font name (one installed on your system), or delete the file and
+load the package locally.

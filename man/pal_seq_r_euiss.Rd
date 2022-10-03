@@ -9,11 +9,14 @@ pal_seq_r_euiss(n)
 \arguments{
 \item{n}{number of colors}
 }
+\value{
+vector of n colors
+}
 \description{
 euissR palettes based on `euissR::colors`
 }
 \examples{
-ggplot2::ggplot(data = mtcars, ggplot2::aes(wt, mpg, col = base::factor(cyl))) + 
+ggplot2::ggplot(data = mtcars, ggplot2::aes(wt, mpg, col = cyl)) + 
   ggplot2::geom_point() + 
-  ggplot2::scale_color_manual(values = pal_seq_r_euiss(6))
+  ggplot2::scale_color_gradientn(colors = pal_seq_r_euiss(4))
 }

@@ -37,5 +37,5 @@ Custom ggplot2::geom_line()
 }
 \examples{
 ggplot2::ggplot(data = mtcars, ggplot2::aes(disp, wt, label = wt)) + 
-  geom_text_euiss()
+  geom_line_euiss()
 }

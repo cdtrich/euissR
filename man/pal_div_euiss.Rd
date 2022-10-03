@@ -2,15 +2,18 @@
 % Please edit documentation in R/pal_div_euiss.R
 \name{pal_div_euiss}
 \alias{pal_div_euiss}
-\title{euissR palettes based on `euissR::colors`}
+\title{euissR palettes based on \code{euissR::colors}}
 \usage{
 pal_div_euiss(n)
 }
 \arguments{
 \item{n}{number of colors}
 }
+\value{
+vector of n colors
+}
 \description{
-euissR palettes based on `euissR::colors`
+euissR palettes based on \code{euissR::colors}
 }
 \examples{
 ggplot2::ggplot(data = mtcars, ggplot2::aes(wt, mpg, col = base::factor(cyl))) + 

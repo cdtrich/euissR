@@ -13,7 +13,7 @@
 #'
 #' @examples 
 #' ggplot2::ggplot(data = mtcars, ggplot2::aes(disp, wt, label = wt)) + 
-#'   geom_text_euiss()
+#'   geom_line_euiss()
 geom_line_euiss <- function(mapping = NULL, 
                             data = NULL, 
                             col = teal, 

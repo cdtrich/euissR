@@ -1,8 +1,7 @@
 #' Custom colors for for \code{eiussR} 
 #'
+#' @return provides colors for \code{eiussR} 
 #' @export
-#' @return
-
 utils::globalVariables(
   c(
     # basic
@@ -34,4 +33,3 @@ utils::globalVariables(
     mint <- "#99cb92"
   )
 )
-

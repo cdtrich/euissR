@@ -2,18 +2,21 @@
 % Please edit documentation in R/pal_seq_v_euiss.R
 \name{pal_seq_v_euiss}
 \alias{pal_seq_v_euiss}
-\title{euissR palettes based on `euissR::colors`}
+\title{euissR palettes based on \code{euissR::colors}}
 \usage{
 pal_seq_v_euiss(n)
 }
 \arguments{
 \item{n}{number of colors}
 }
+\value{
+vector of n colors
+}
 \description{
-euissR palettes based on `euissR::colors`
+euissR palettes based on \code{euissR::colors}
 }
 \examples{
-ggplot2::ggplot(data = mtcars, ggplot2::aes(wt, mpg, col = base::factor(cyl))) + 
+ggplot2::ggplot(data = mtcars, ggplot2::aes(wt, mpg, col = disp)) + 
   ggplot2::geom_point() + 
-  ggplot2::scale_color_manual(values = pal_seq_v_euiss(6))
+  ggplot2::scale_color_gradientn(colors = pal_seq_v_euiss(4))
 }

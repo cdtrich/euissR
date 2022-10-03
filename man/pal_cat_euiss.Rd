@@ -2,18 +2,21 @@
 % Please edit documentation in R/pal_cat_euiss.R
 \name{pal_cat_euiss}
 \alias{pal_cat_euiss}
-\title{euissR palettes based on `euissR::colors`}
+\title{euissR palettes based on \code{euissR::colors}}
 \usage{
 pal_cat_euiss(n)
 }
 \arguments{
 \item{n}{number of colors}
 }
+\value{
+vector of n colors
+}
 \description{
-euissR palettes based on `euissR::colors`
+euissR palettes based on \code{euissR::colors}
 }
 \examples{
-ggplot2::ggplot(data = mtcars, ggplot2::aes(wt, mpg, col = base::factor(cyl))) + 
+ggplot2::ggplot(data = mtcars, ggplot2::aes(wt, mpg, col = factor(cyl))) + 
   ggplot2::geom_point() + 
   ggplot2::scale_color_manual(values = pal_cat_euiss(6))
 }

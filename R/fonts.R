@@ -1,7 +1,8 @@
 #' Fonts import for \code{eiussR}
 #'
-#' @export
-#' @return
+#' @return sets global font \code{ggplot2} plots
+#' 
+#' @name fonts
 
 # load system fonts
 library(extrafont)
@@ -15,9 +16,10 @@ extrafont::loadfonts(quiet = TRUE, device = "win")
 
 utils::globalVariables(
   c(
-    txt_family <- "sans",
-    txt_bold <- "bold",            # fontface
-    txt_height <- 0.85,             # lineheight
-    txt_label <- 2.66             # label size
+    # txt_family <- "PT Sans Narrow", # font family
+    txt_family <- "sans",         # font family
+    txt_bold <- "bold",             # font face
+    txt_height <- 0.85,             # line height
+    txt_label <- 2.66               # text size
   )
 )
