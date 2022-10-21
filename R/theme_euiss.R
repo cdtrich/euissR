@@ -41,7 +41,8 @@ theme_euiss <- function() {
                          ),
                          
                          # background
-                         plot.background = ggplot2::element_rect(fill = "white"),
+                         plot.background = ggplot2::element_rect(fill = "white",
+                                                                 color = NA),
                          
                          
                          # theoretical grid styling

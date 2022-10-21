@@ -27,7 +27,7 @@
 #'   geom_text_euiss(ggplot2::aes(label = rownames(mtcars)))
 geom_text_euiss <- function(mapping = NULL, 
                             data = NULL, 
-                            col = col_axis,
+                            # col = col_axis,
                             family = txt_family,
                             size = txt_label,
                             hjust = "left",
@@ -41,7 +41,7 @@ geom_text_euiss <- function(mapping = NULL,
   ggplot2::geom_text(
     data = data,
     mapping = mapping,
-    col = col,
+    # col = col,
     family = family,
     size = size,
     hjust = hjust,
