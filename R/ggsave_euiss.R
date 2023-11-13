@@ -28,12 +28,12 @@ ggsave_euiss <- function(filename,
                          ...) {
   
   # output dimensions
-  mm_book <- tibble::tibble(dim = c("height", "onecol", "twocol", "full"),
-                            mm = c(181.25, 108, 60, 135))
-  mm_cp <- tibble::tibble(dim = c("height", "onecol", "twocol", "full"),
-                          mm = c(221.9, 65.767, 140, 180))
-  mm_brief <- tibble::tibble(dim = c("height", "onecol", "twocol", "full"),
-                             mm = c(258.233, 85, 180, 210))
+  mm_book <- tibble::tibble(dim = c("height", "onecol", "twocol", "full", "spread"),
+                            mm = c(181.25, 60, 108, 135, 135*2))
+  mm_cp <- tibble::tibble(dim = c("height", "onecol", "twocol", "full", "spread"),
+                          mm = c(221.9, 65.767, 140, 180, 180*2))
+  mm_brief <- tibble::tibble(dim = c("height", "onecol", "twocol", "full", "spread"),
+                             mm = c(258.233, 85, 180, 210, 210*2))
   
   # infer device
   dev <- stringr::str_sub(filename, 

@@ -24,10 +24,11 @@ geom_col_euiss <- function(mapping = NULL,
                            show.legend = NA,
                            inherit.aes = TRUE,
                            ...) {
+  
   ggplot2::geom_col(
     data = data,
     mapping = mapping,
-    fill = fill,
+    # fill = fill,
     col = col,
     width = width,
     show.legend = show.legend,

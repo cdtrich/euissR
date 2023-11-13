@@ -24,7 +24,7 @@ geom_line_euiss <- function(mapping = NULL,
   ggplot2::geom_line(
     data = data,
     mapping = mapping,
-    col = col,
+    # col = col,
     size = size,
     show.legend = show.legend,
     inherit.aes = inherit.aes,
