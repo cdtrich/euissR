@@ -89,7 +89,7 @@ ggsave_euiss <- function(filename,
       width = width_loc,
       height = height_loc,
       units = units,
-      device = "cairo_pdf",
+      dev = cairo_pdf,
       useDingbats = FALSE,
       ...
     )
