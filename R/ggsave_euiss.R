@@ -25,7 +25,7 @@ ggsave_euiss <- function(filename,
                          w = NA,
                          h = 1,
                          units = "mm",
-                         dev,
+                         # dev = grDevices::cairo_pdf,
                          ...) {
   
   # output dimensions
@@ -89,8 +89,7 @@ ggsave_euiss <- function(filename,
       width = width_loc,
       height = height_loc,
       units = units,
-      dev = cairo_pdf,
-      useDingbats = FALSE,
+      device = grDevices::cairo_pdf,
       ...
     )
   } else { stop("No known device!") 
