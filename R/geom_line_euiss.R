@@ -26,6 +26,8 @@ geom_line_euiss <- function(mapping = NULL,
     mapping = mapping,
     col = col,
     size = size,
+    lineend = "butt",
+    linejoin = "round",
     show.legend = show.legend,
     inherit.aes = inherit.aes,
     ...
