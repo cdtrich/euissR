@@ -41,6 +41,7 @@ geom_linerange_x_euiss <- function(mapping = NULL,
       xmin = xmin,
       col = col,
       size = linewidth,
+      lineend = "butt",
       show.legend = show.legend,
       inherit.aes = inherit.aes,
       ...
