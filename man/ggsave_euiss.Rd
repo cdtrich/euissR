@@ -11,11 +11,12 @@ ggsave_euiss(
   w = NA,
   h = 1,
   units = "mm",
+  dev = NULL,
   ...
 )
 }
 \arguments{
-\item{filename}{name of file, incl. sub-folders, excl. file extension}
+\item{filename}{name of file, incl. sub-folders, *incl. file extension*}
 
 \item{plot}{last plot}
 
@@ -26,6 +27,8 @@ ggsave_euiss(
 \item{h}{\code{numeric} fraction of full height}
 
 \item{units}{units of width and height, defaults to \code{mm}}
+
+\item{dev}{optional explicit device (e.g. \code{svglite::svglite}); otherwise inferred}
 
 \item{...}{other arguments that can be passed to \code{ggplot2::ggsave()}}
 }

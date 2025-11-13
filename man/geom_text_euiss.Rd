@@ -7,9 +7,9 @@
 geom_text_euiss(
   mapping = NULL,
   data = NULL,
-  col = col_axis,
-  family = txt_family,
-  size = txt_label,
+  col = NULL,
+  family = NULL,
+  size = NULL,
   hjust = "left",
   vjust = 0,
   lineheight = 0.85,

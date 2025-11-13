@@ -1,7 +1,6 @@
-#' Custom colors for for \code{eiussR} 
-#'
-#' @return provides colors for \code{eiussR} 
-#' @export
+# Custom colors for euissR package
+# These are defined as global variables to avoid R CMD check notes
+
 utils::globalVariables(
   c(
     # basic

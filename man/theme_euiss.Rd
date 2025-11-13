@@ -2,13 +2,14 @@
 % Please edit documentation in R/theme_euiss.R
 \name{theme_euiss}
 \alias{theme_euiss}
-\title{Custom \code{ggplot2} theme}
+\title{Custom \code{ggplot2} theme enhanced with style script features}
 \usage{
 theme_euiss()
 }
 \description{
-Custom \code{ggplot2} theme
+Custom \code{ggplot2} theme enhanced with style script features
 }
 \details{
 \code{theme_euiss()} runs when \code{euissR} package is loaded.
+Enhanced version that incorporates improvements from style script.
 }

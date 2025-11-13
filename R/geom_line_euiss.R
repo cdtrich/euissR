@@ -17,17 +17,20 @@
 geom_line_euiss <- function(mapping = NULL, 
                             data = NULL, 
                             col = teal, 
-                            size = lwd_line,
+                            linewidth = lwd_line,
                             show.legend = NA,
                             inherit.aes = TRUE,
                             ...) {
   ggplot2::geom_line(
     data = data,
     mapping = mapping,
-    # col = col,
-    size = size,
+    col = col,
+    linewidth = linewidth,
+    lineend = "butt",
+    linejoin = "round",
     show.legend = show.legend,
     inherit.aes = inherit.aes,
     ...
   )
 }
+

@@ -27,9 +27,9 @@
 #'   geom_text_euiss(ggplot2::aes(label = rownames(mtcars)))
 geom_text_euiss <- function(mapping = NULL, 
                             data = NULL, 
-                            # col = col_axis,
-                            family = txt_family,
-                            size = txt_label,
+                            col = NULL,  # Will be set from environment if NULL
+                            family = NULL,  # Will be set from environment if NULL
+                            size = NULL,  # Will be set from environment if NULL
                             hjust = "left",
                             vjust = 0,
                             lineheight = .85,
@@ -38,15 +38,25 @@ geom_text_euiss <- function(mapping = NULL,
                             inherit.aes = TRUE,
                             ...) {
   
+  # Get values from package environment if not specified
+  if (is.null(col)) {
+    col <- get("col_axis", envir = .euiss_env, inherits = FALSE)
+  }
+  if (is.null(family)) {
+    family <- get("txt_family", envir = .euiss_env, inherits = FALSE)
+  }
+  if (is.null(size)) {
+    size <- get("txt_label", envir = .euiss_env, inherits = FALSE)
+  }
+  
   ggplot2::geom_text(
     data = data,
     mapping = mapping,
-    # col = col,
+    col = col,
     family = family,
     size = size,
     hjust = hjust,
     vjust = vjust,
-    # nudge_x = nudge,
     lineheight = lineheight,
     show.legend = show.legend,
     inherit.aes = inherit.aes,

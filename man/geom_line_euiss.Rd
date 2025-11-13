@@ -8,7 +8,7 @@ geom_line_euiss(
   mapping = NULL,
   data = NULL,
   col = teal,
-  size = lwd_line,
+  linewidth = lwd_line,
   show.legend = NA,
   inherit.aes = TRUE,
   ...
@@ -21,13 +21,13 @@ geom_line_euiss(
 
 \item{col}{line color}
 
-\item{size}{line width}
-
 \item{show.legend}{logical. Should this layer be included in the legends? \code{NA}, the default, includes if any aesthetics are mapped. \code{FALSE} never includes, and \code{TRUE} always includes. It can also be a named logical vector to finely select the aesthetics to display.}
 
 \item{inherit.aes}{If \code{FALSE}, overrides the default aesthetics, rather than combining with them. This is most useful for helper functions that define both data and aesthetics and shouldn't inherit behaviour from the default plot specification, e.g. \code{borders()}.}
 
 \item{...}{other arguments that can be passed to \code{ggplot2::geom_line()}}
+
+\item{size}{line width}
 }
 \value{
 Pre-styled \code{geom_line()}

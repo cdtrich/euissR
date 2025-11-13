@@ -1,14 +1,14 @@
 Package: euissR
 Type: Package
 Title: EUISS Visual Identity for Ggplot2
-Version: 0.1.1
+Version: 0.1.2
 Author: cd_trich
 Maintainer: <christian.g.dietrich@gmail.com>
-Description: Custom ggplot2 theme, geoms and color palettes to reflect the visual identity of the EU Institute for Security Studies.
+Description: Custom ggplot2 theme, geoms and color palettes to reflect the visual identity of the EU Institute for Security Studies. Enhanced with improved font handling, additional color palettes, utility functions, and integration of common data analysis workflows.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.1
+RoxygenNote: 7.3.3
 Suggests: 
     testthat (>= 3.0.0),
     needs

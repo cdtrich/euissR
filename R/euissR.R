@@ -5,10 +5,9 @@
 #' See the README on
 #' \href{https://github.com/cdtrich/euissR/blob/main/README.md}{GitHub}
 #'
-#' @docType package
-#' @name euissR
+#' @keywords internal
 #' @importFrom dplyr %>%
-NULL
+"_PACKAGE"
 
 ## quiets concerns of R CMD check re: the .'s that appear in pipelines
 if(getRversion() >= "2.15.1")  utils::globalVariables(c("."))
