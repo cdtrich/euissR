@@ -4,14 +4,14 @@
 \alias{x_axis_euiss}
 \title{Custom ggplot2::geom_hline()}
 \usage{
-x_axis_euiss(yintercept = 0, size = lwd_grid, col = col_grid, ...)
+x_axis_euiss(yintercept = 0, linewidth = NULL, col = NULL, ...)
 }
 \arguments{
 \item{yintercept}{position of x-axis. `default = 0`}
 
-\item{size}{line width}
+\item{linewidth}{line width (defaults to EUISS grid linewidth)}
 
-\item{col}{line color}
+\item{col}{line color (defaults to EUISS grid color)}
 
 \item{...}{other arguments that can be passed to `ggplot2::geom_hline()`}
 }

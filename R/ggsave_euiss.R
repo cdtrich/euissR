@@ -116,7 +116,12 @@ ggsave_euiss <- function(filename,
   if (!is.null(dev)) {
     device <- dev
   } else if (identical(ext, "svg")) {
-    device <- svglite::svglite
+    if (requireNamespace("svglite", quietly = TRUE)) {
+      device <- svglite::svglite
+    } else {
+      warning("svglite package not available. Using default svg device.")
+      device <- "svg"
+    }
   } else if (identical(ext, "pdf")) {
     device <- grDevices::cairo_pdf
   } else {

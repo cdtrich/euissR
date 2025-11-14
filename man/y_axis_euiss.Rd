@@ -4,16 +4,16 @@
 \alias{y_axis_euiss}
 \title{Custom ggplot2::geom_vline()}
 \usage{
-y_axis_euiss(xintercept = 0, size = lwd_grid, col = col_grid, ...)
+y_axis_euiss(xintercept = 0, linewidth = NULL, col = NULL, ...)
 }
 \arguments{
 \item{xintercept}{position of y-axis. `default = 0`}
 
-\item{size}{line width}
+\item{linewidth}{line width}
 
 \item{col}{line color}
 
-\item{...}{other arguments that can be passed to `ggplot2::geom_hline()`}
+\item{...}{other arguments that can be passed to `ggplot2::geom_vline()`}
 }
 \value{
 Pre-styled `geom_vline()` that inserts a grey y-axis at `x-intercept = 0`

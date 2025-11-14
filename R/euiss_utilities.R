@@ -286,15 +286,18 @@ euiss_force_import_fonts <- function() {
     for (font in missing_fonts) {
       message("  Registering: ", font)
       
-      # Try to register with windowsFonts
+      # Try to register with windowsFonts (CORRECTED - no := operator)
       if (.Platform$OS.type == "windows") {
         tryCatch({
-          windowsFonts(!!font := windowsFont(font))
+          # Create a named list for windowsFonts - FIXED version
+          font_list <- list()
+          font_list[[font]] <- grDevices::windowsFont(font)
+          do.call(grDevices::windowsFonts, font_list)
           
           # Test if it works
           test_result <- tryCatch({
-            old_par <- par(family = font)
-            par(old_par)
+            old_par <- graphics::par(family = font)
+            graphics::par(old_par)
             TRUE
           }, error = function(e) FALSE)
           

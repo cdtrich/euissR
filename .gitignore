@@ -3,3 +3,4 @@
 .Rdata
 .httr-oauth
 .DS_Store
+echo "README.md" >> .gitignore

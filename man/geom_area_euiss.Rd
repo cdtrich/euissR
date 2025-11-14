@@ -7,9 +7,9 @@
 geom_area_euiss(
   mapping = NULL,
   data = NULL,
-  col = teal,
-  fill = scales::alpha(teal, 0.1),
-  size = lwd_line,
+  col = NULL,
+  fill = NULL,
+  linewidth = NULL,
   show.legend = NA,
   inherit.aes = TRUE,
   ...
@@ -20,11 +20,11 @@ geom_area_euiss(
 
 \item{data}{The data to be displayed in this layer.}
 
-\item{col}{area color}
+\item{col}{area color (defaults to EUISS teal)}
 
-\item{fill}{area fill}
+\item{fill}{area fill (defaults to transparent EUISS teal)}
 
-\item{size}{line width}
+\item{linewidth}{line width (defaults to EUISS standard)}
 
 \item{show.legend}{logical. Should this layer be included in the legends? \code{NA}, the default, includes if any aesthetics are mapped. \code{FALSE} never includes, and \code{TRUE} always includes. It can also be a named logical vector to finely select the aesthetics to display.}
 

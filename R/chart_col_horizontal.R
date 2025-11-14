@@ -68,7 +68,7 @@ chart_col_horizontal <- function(data,
       geom_text_euiss(data = data_label,
                       ggplot2::aes(x = 0,
                                    label = text),
-                      vjust = 0,
+                      vjust = vjust,
                       nudge_y = nudge_y) +
       ggplot2::theme(axis.text.x = ggplot2::element_blank(),
                      axis.text.y = ggplot2::element_blank()) +
@@ -78,10 +78,12 @@ chart_col_horizontal <- function(data,
         caption = caption)
   }
   
-  # calling plotting function
+  # calling plotting function - FIX: Pass all required parameters
   col(data,
       ggplot2::aes(x = !! x,
                    y = !! y),
-      data_label = data_label)
+      data_label = data_label,
+      nudge_y = nudge_y,
+      vjust = vjust)
   
 }
