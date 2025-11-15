@@ -1,4 +1,4 @@
-#' Custom ggplot2::ggsave()
+#' Custom ggplot2::ggsave() with proper font handling
 #'
 #' @param filename name of file, incl. sub-folders, *incl. file extension*
 #' @param plot last plot
@@ -7,6 +7,7 @@
 #' @param h \code{numeric} fraction of full height 
 #' @param units units of width and height, defaults to \code{mm}
 #' @param dev optional explicit device (e.g. \code{svglite::svglite}); otherwise inferred
+#' @param embed_fonts logical, whether to attempt font embedding for PDF (requires GhostScript)
 #' @param ... other arguments that can be passed to \code{ggplot2::ggsave()}
 #'
 #' @return Parametrized \code{ggsave()}
@@ -19,6 +20,7 @@
 #'   geom_line_euiss() 
 #'   # NOT RUN 
 #'   # ggsave_euiss("test.pdf", publication = "cp", w = "onecol", h = 1)
+#'   # ggsave_euiss("test.svg", publication = "cp", w = "onecol", h = 1)
 #'   # END NOT RUN 
 ggsave_euiss <- function(filename,
                          plot = ggplot2::last_plot(),
@@ -27,6 +29,7 @@ ggsave_euiss <- function(filename,
                          h = 1,
                          units = "mm",
                          dev = NULL,
+                         embed_fonts = TRUE,
                          ...) {
   
   # ---------------------------------------------------------------------------
@@ -109,21 +112,19 @@ ggsave_euiss <- function(filename,
   # ---------------------------------------------------------------------------
   # device selection
   # ---------------------------------------------------------------------------
-  # priority:
-  # 1) use explicit `dev` if provided
-  # 2) else: svg -> svglite::svglite; pdf -> cairo_pdf; otherwise pass extension to ggsave
+  # Priority:
+  # 1) Use explicit `dev` if provided
+  # 2) PDF: Use "pdf" string (grDevices::pdf - better font support than cairo_pdf)
+  # 3) Otherwise: pass extension string to ggsave
+  #
+  # NOTE: SVG is handled separately to avoid ggplot2/svglite compatibility issues
   
   if (!is.null(dev)) {
     device <- dev
-  } else if (identical(ext, "svg")) {
-    if (requireNamespace("svglite", quietly = TRUE)) {
-      device <- svglite::svglite
-    } else {
-      warning("svglite package not available. Using default svg device.")
-      device <- "svg"
-    }
   } else if (identical(ext, "pdf")) {
-    device <- grDevices::cairo_pdf
+    # Use string "pdf" for grDevices::pdf (better font support than cairo_pdf)
+    device <- "pdf"
+    # device <- grDevices::cairo_pdf
   } else {
     device <- ext
   }
@@ -132,34 +133,54 @@ ggsave_euiss <- function(filename,
   # export
   # ---------------------------------------------------------------------------
   
-  if (!identical(ext, "pdf")) {
+  message(
+    paste0(
+      "Exporting to ", ext, ": width = ", width_loc,
+      ", height = ", height_loc, " mm"
+    )
+  )
+  
+  if (identical(ext, "svg")) {
+    # For SVG: Call svglite directly to avoid ggsave() compatibility issues
+    # This mirrors the working example: svglite("file.svg"); print(plot); dev.off()
     
-    message(
-      paste0(
-        "Exporting to ", ext, ": width = ", width_loc,
-        ", height ", height_loc, " mm"
+    if (requireNamespace("svglite", quietly = TRUE)) {
+      # Convert mm to inches for svglite
+      width_in <- width_loc / 25.4
+      height_in <- height_loc / 25.4
+      
+      svglite::svglite(
+        filename = filename,
+        width = width_in,
+        height = height_in,
+        ...
       )
-    )
-    
-    ggplot2::ggsave(
-      filename = filename,
-      plot     = plot,
-      width    = width_loc * 10,   # convert mm -> px approximation (for Illustrator fine-tuning)
-      height   = height_loc * 10,
-      units    = "px",
-      device   = device,
-      ...
-    )
-    
-  } else {
-    
-    message(
-      paste0(
-        "Exporting to ", ext, ": width = ", width_loc,
-        ", height ", height_loc, " mm"
+      print(plot)
+      grDevices::dev.off()
+      
+      message("✓ SVG exported with svglite (custom fonts supported)")
+    } else {
+      warning(
+        "svglite package not found. Custom fonts will not work in SVG.\n",
+        "  Install with: install.packages('svglite')\n",
+        "  Falling back to grDevices::svg",
+        call. = FALSE
       )
-    )
+      
+      # Fallback to regular ggsave with grDevices::svg
+      ggplot2::ggsave(
+        filename = filename,
+        plot     = plot,
+        width    = width_loc,
+        height   = height_loc,
+        units    = units,
+        device   = grDevices::svg,
+        ...
+      )
+    }
     
+  } else if (identical(ext, "pdf")) {
+    # PDF export with optional font embedding
     ggplot2::ggsave(
       filename    = filename,
       plot        = plot,
@@ -168,6 +189,38 @@ ggsave_euiss <- function(filename,
       units       = units,
       device      = device,
       useDingbats = FALSE,
+      ...
+    )
+    
+    # Attempt to embed fonts if requested
+    if (embed_fonts) {
+      if (requireNamespace("extrafont", quietly = TRUE)) {
+        tryCatch({
+          extrafont::embed_fonts(filename, outfile = filename)
+          message("✓ Fonts embedded successfully")
+        }, error = function(e) {
+          warning(
+            "Could not embed fonts. This usually means GhostScript is not installed.\n",
+            "  Install from: https://www.ghostscript.com/releases/gsdnld.html\n",
+            "  Or set embed_fonts = FALSE to skip this step.\n",
+            "  Error: ", e$message,
+            call. = FALSE
+          )
+        })
+      } else {
+        message("Note: extrafont package needed for font embedding. Skipping.")
+      }
+    }
+    
+  } else {
+    # Non-PDF, non-SVG export (PNG, JPG, etc.)
+    ggplot2::ggsave(
+      filename = filename,
+      plot     = plot,
+      width    = width_loc,
+      height   = height_loc,
+      units    = units,
+      device   = device,
       ...
     )
   }

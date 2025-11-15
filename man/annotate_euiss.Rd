@@ -42,8 +42,10 @@ A ggplot2 annotation layer with EUISS styling
 Custom ggplot2::annotate() with EUISS styling
 }
 \examples{
-\donttest{
-# Examples that use EUISS fonts (requires euissR fonts to be installed)
+\dontrun{
+# Requires EUISS fonts and ggplot2/magrittr packages
+require(ggplot2)
+require(magrittr)
 ggplot2::ggplot(mtcars, ggplot2::aes(wt, mpg)) +
   ggplot2::geom_point() +
   annotate_euiss("text", x = 3, y = 25, label = "Sample text")

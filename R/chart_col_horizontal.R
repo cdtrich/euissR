@@ -16,10 +16,13 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' # Requires EUISS fonts and ggplot2/magrittr packages
 #' require(ggplot2)
 #' require(magrittr)
 #' mtcars %>% 
 #'   chart_col_horizontal(x = mpg, y = cyl)
+#' }
 chart_col_horizontal <- function(data,
                                  x, 
                                  y, 

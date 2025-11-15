@@ -30,63 +30,63 @@
     available_fonts <- unique(c(extrafont_fonts, system_fonts))
     
     # Check font availability with branding priority
-        
-        # Priority 1: PT Sans Pro Narrow (Adobe font - best for branding)
-        if ("PT Sans Pro Narrow" %in% available_fonts) {
-          font_family <- "PT Sans Pro Narrow"
-          # Register with Windows if found via systemfonts
-          if (!"PT Sans Pro Narrow" %in% extrafont_fonts && .Platform$OS.type == "windows") {
-            try(windowsFonts("PT Sans Pro Narrow" = windowsFont("PT Sans Pro Narrow")), silent = TRUE)
-          }
-        } 
-        # Priority 2: PT Sans Narrow (Google font - excellent alternative)
-        else if ("PT Sans Narrow" %in% available_fonts) {
-          font_family <- "PT Sans Narrow"
-          if (!"PT Sans Narrow" %in% extrafont_fonts && .Platform$OS.type == "windows") {
-            try(windowsFonts("PT Sans Narrow" = windowsFont("PT Sans Narrow")), silent = TRUE)
-          }
-        } 
-        # Priority 3: PT Sans (from style script)
-        else if ("PT Sans" %in% available_fonts) {
-          if (.Platform$OS.type == "windows") {
-            try(windowsFonts(PTSans = windowsFont("PT Sans")), silent = TRUE)
-          }
-          font_family <- "PT Sans"
-        } else {
-          # Try to import PT Sans fonts if not found
-          font_paths <- c(
-            file.path(Sys.getenv("USERPROFILE"), "AppData", "Local", "Microsoft", "Windows", "Fonts"),
-            file.path(Sys.getenv("SystemRoot"), "Fonts"),
-            "/System/Library/Fonts",  # macOS
-            "/usr/share/fonts"        # Linux
-          )
-          
-          for (path in font_paths) {
-            if (dir.exists(path)) {
-              try({
-                extrafont::font_import(paths = path, recursive = FALSE, 
-                                     pattern = "PT", prompt = FALSE)
-                extrafont::loadfonts(quiet = TRUE, device = "win")
-                
-                updated_fonts <- extrafont::fonts()
-                # Check in priority order after import
-                if ("PT Sans Pro Narrow" %in% updated_fonts) {
-                  font_family <- "PT Sans Pro Narrow"
-                  break
-                } else if ("PT Sans Narrow" %in% updated_fonts) {
-                  font_family <- "PT Sans Narrow"
-                  break
-                } else if ("PT Sans" %in% updated_fonts) {
-                  if (.Platform$OS.type == "windows") {
-                    grDevices::windowsFonts(PTSans = grDevices::windowsFont("PT Sans"))
-                  }
-                  font_family <- "PT Sans"
-                  break
-                }
-              }, silent = TRUE)
+    
+    # Priority 1: PT Sans Pro Narrow (Adobe font - best for branding)
+    if ("PT Sans Pro Narrow" %in% available_fonts) {
+      font_family <- "PT Sans Pro Narrow"
+      # Register with Windows if found via systemfonts
+      if (!"PT Sans Pro Narrow" %in% extrafont_fonts && .Platform$OS.type == "windows") {
+        try(grDevices::windowsFonts("PT Sans Pro Narrow" = grDevices::windowsFont("PT Sans Pro Narrow")), silent = TRUE)
+      }
+    } 
+    # Priority 2: PT Sans Narrow (Google font - excellent alternative)
+    else if ("PT Sans Narrow" %in% available_fonts) {
+      font_family <- "PT Sans Narrow"
+      if (!"PT Sans Narrow" %in% extrafont_fonts && .Platform$OS.type == "windows") {
+        try(grDevices::windowsFonts("PT Sans Narrow" = grDevices::windowsFont("PT Sans Narrow")), silent = TRUE)
+      }
+    } 
+    # Priority 3: PT Sans (from style script)
+    else if ("PT Sans" %in% available_fonts) {
+      if (.Platform$OS.type == "windows") {
+        try(grDevices::windowsFonts(PTSans = grDevices::windowsFont("PT Sans")), silent = TRUE)
+      }
+      font_family <- "PT Sans"
+    } else {
+      # Try to import PT Sans fonts if not found
+      font_paths <- c(
+        file.path(Sys.getenv("USERPROFILE"), "AppData", "Local", "Microsoft", "Windows", "Fonts"),
+        file.path(Sys.getenv("SystemRoot"), "Fonts"),
+        "/System/Library/Fonts",  # macOS
+        "/usr/share/fonts"        # Linux
+      )
+      
+      for (path in font_paths) {
+        if (dir.exists(path)) {
+          try({
+            extrafont::font_import(paths = path, recursive = FALSE, 
+                                   pattern = "PT", prompt = FALSE)
+            extrafont::loadfonts(quiet = TRUE, device = "win")
+            
+            updated_fonts <- extrafont::fonts()
+            # Check in priority order after import
+            if ("PT Sans Pro Narrow" %in% updated_fonts) {
+              font_family <- "PT Sans Pro Narrow"
+              break
+            } else if ("PT Sans Narrow" %in% updated_fonts) {
+              font_family <- "PT Sans Narrow"
+              break
+            } else if ("PT Sans" %in% updated_fonts) {
+              if (.Platform$OS.type == "windows") {
+                grDevices::windowsFonts(PTSans = grDevices::windowsFont("PT Sans"))
+              }
+              font_family <- "PT Sans"
+              break
             }
-          }
+          }, silent = TRUE)
         }
+      }
+    }
     
     # Font settings
     assign("txt_family", font_family, envir = .euiss_env)
@@ -203,6 +203,63 @@
   assign("pal_seq_v", pal_seq_v, envir = .euiss_env)
   assign("pal_seq_vir", pal_seq_vir, envir = .euiss_env)
   assign("pal_seq_bathy", pal_seq_bathy, envir = .euiss_env)
+}
+
+#' Get current font settings
+#' @export
+euiss_get_fonts <- function() {
+  .init_fonts()  # Ensure fonts are initialized
+  
+  list(
+    family = get("txt_family", envir = .euiss_env, inherits = FALSE),
+    bold = get("txt_bold", envir = .euiss_env, inherits = FALSE),
+    height = get("txt_height", envir = .euiss_env, inherits = FALSE),
+    label_size = get("txt_label", envir = .euiss_env, inherits = FALSE)
+  )
+}
+
+#' Set fonts for euissR package  
+#' @param family Font family name
+#' @param bold Font weight for bold text
+#' @param height Line height
+#' @param label_size Text label size
+#' @export
+euiss_set_fonts <- function(family = NULL, bold = NULL, height = NULL, label_size = NULL) {
+  .init_fonts()  # Ensure fonts are initialized
+  
+  # Get current settings
+  current <- euiss_get_fonts()
+  
+  # Update only provided parameters
+  if (!is.null(family)) current$family <- family
+  if (!is.null(bold)) current$bold <- bold  
+  if (!is.null(height)) current$height <- height
+  if (!is.null(label_size)) current$label_size <- label_size
+  
+  # Validate font availability
+  if (current$family != "sans") {
+    # Try to load fonts if not already loaded
+    if (requireNamespace("extrafont", quietly = TRUE)) {
+      extrafont::loadfonts(quiet = TRUE, device = "win")
+      available_fonts <- extrafont::fonts()
+      if (!current$family %in% available_fonts) {
+        warning(paste("Font", current$family, "not available. Using 'sans'."))
+        current$family <- "sans"
+      }
+    } else {
+      warning("extrafont package not available. Using 'sans'.")
+      current$family <- "sans"
+    }
+  }
+  
+  # Store in package environment
+  assign("txt_family", current$family, envir = .euiss_env)
+  assign("txt_bold", current$bold, envir = .euiss_env) 
+  assign("txt_height", current$height, envir = .euiss_env)
+  assign("txt_label", current$label_size, envir = .euiss_env)
+  
+  message(paste("Font updated to:", current$family))
+  invisible(current)
 }
 
 .onLoad <- function(libname, pkgname) {

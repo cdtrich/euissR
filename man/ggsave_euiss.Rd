@@ -2,7 +2,7 @@
 % Please edit documentation in R/ggsave_euiss.R
 \name{ggsave_euiss}
 \alias{ggsave_euiss}
-\title{Custom ggplot2::ggsave()}
+\title{Custom ggplot2::ggsave() with proper font handling}
 \usage{
 ggsave_euiss(
   filename,
@@ -12,6 +12,7 @@ ggsave_euiss(
   h = 1,
   units = "mm",
   dev = NULL,
+  embed_fonts = TRUE,
   ...
 )
 }
@@ -30,13 +31,15 @@ ggsave_euiss(
 
 \item{dev}{optional explicit device (e.g. \code{svglite::svglite}); otherwise inferred}
 
+\item{embed_fonts}{logical, whether to attempt font embedding for PDF (requires GhostScript)}
+
 \item{...}{other arguments that can be passed to \code{ggplot2::ggsave()}}
 }
 \value{
 Parametrized \code{ggsave()}
 }
 \description{
-Custom ggplot2::ggsave()
+Custom ggplot2::ggsave() with proper font handling
 }
 \examples{
 ggplot2::ggplot(data = mtcars, ggplot2::aes(disp, wt, label = wt)) + 
@@ -44,5 +47,6 @@ ggplot2::ggplot(data = mtcars, ggplot2::aes(disp, wt, label = wt)) +
   geom_line_euiss() 
   # NOT RUN 
   # ggsave_euiss("test.pdf", publication = "cp", w = "onecol", h = 1)
+  # ggsave_euiss("test.svg", publication = "cp", w = "onecol", h = 1)
   # END NOT RUN 
 }

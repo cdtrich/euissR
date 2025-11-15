@@ -26,6 +26,7 @@ Imports:
     scales,
     extrafont,
     ggplot2,
-    tibble
+    tibble,
+    svglite
 Depends: 
     R (>= 2.10)
