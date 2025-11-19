@@ -11,6 +11,6 @@
 #'   ggplot2::geom_point() + 
 #'   ggplot2::scale_color_manual(values = pal_seq_vir_euiss(6))
 pal_seq_vir_euiss <- function(n) {
-  pal <- grDevices::colorRampPalette(c(mauve, teal2, fuchsia1, egg))
-  pal(n)
+  pal_seq_vir <- get("pal_seq_vir", envir = .euiss_env, inherits = FALSE)
+  pal_seq_vir(n)
 }

@@ -13,6 +13,7 @@
     if (requireNamespace("extrafont", quietly = TRUE)) {
       try({
         extrafont::loadfonts(quiet = TRUE, device = "win")
+        extrafont::loadfonts(quiet = TRUE, device = "pdf")
         extrafont_fonts <- extrafont::fonts()
       }, silent = TRUE)
     }
@@ -262,9 +263,52 @@ euiss_set_fonts <- function(family = NULL, bold = NULL, height = NULL, label_siz
   invisible(current)
 }
 
+#' Copy colors from .euiss_env to package namespace
+#' 
+#' This allows functions to use colors directly in default parameters.
+#' For example: geom_col_euiss(fill = teal) works because teal is
+#' available in the package namespace, not just in .euiss_env.
+.copy_colors_to_namespace <- function() {
+  
+  color_names <- c(
+    # basic
+    "col_grid", "col_grid0", "col_axis", "col_axis_text", "grey25",
+    
+    # cold
+    "blue", "teal", "grey",
+    "teal0", "teal1", "teal1.1", "teal1.2", 
+    "teal2", "teal2.1", "teal3",
+    
+    # warm
+    "egg", "egg0", "lightorange", "orange",
+    "fuchsia1", "fuchsia1.0", "fuchsia2", "fuchsia3",
+    "mauve", "mauve1",
+    
+    # green
+    "frog", "mint",
+    
+    # line widths
+    "lwd_grid", "lwd_line", "lwd_point"
+  )
+  
+  # Get package namespace (parent environment of current function environment)
+  ns <- parent.env(environment())
+  
+  # Copy each variable from .euiss_env to package namespace
+  for (name in color_names) {
+    if (exists(name, envir = .euiss_env, inherits = FALSE)) {
+      value <- get(name, envir = .euiss_env, inherits = FALSE)
+      assign(name, value, envir = ns)
+    }
+  }
+  
+  invisible(NULL)
+}
+
 .onLoad <- function(libname, pkgname) {
   .init_fonts()
   .init_palettes()
+  .copy_colors_to_namespace()  # <-- ADD THIS LINE
 }
 
 .onAttach <- function(libname, pkgname) {

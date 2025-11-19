@@ -11,6 +11,6 @@
 #'   ggplot2::geom_point() + 
 #'   ggplot2::scale_color_manual(values = pal_div_euiss(6))
 pal_div_euiss <- function(n) {
-  pal <- grDevices::colorRampPalette(c(teal3, teal, col_grid, egg, fuchsia2))
-  pal(n)
+  pal_div <- get("pal_div", envir = .euiss_env, inherits = FALSE)
+  pal_div(n)
 }

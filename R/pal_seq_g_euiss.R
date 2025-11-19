@@ -10,6 +10,6 @@
 #'   ggplot2::geom_point() + 
 #'   ggplot2::scale_color_gradientn(colors = pal_seq_g_euiss(4))
 pal_seq_g_euiss <- function(n) {
-  pal <- grDevices::colorRampPalette(c(teal3, teal, mint, egg))
-  pal(n)
+  pal_seq_g <- get("pal_seq_g", envir = .euiss_env, inherits = FALSE)
+  pal_seq_g(n)
 }

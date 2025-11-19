@@ -116,8 +116,8 @@ euiss_get_dimensions <- function(publication = c("cp", "book", "brief")) {
 #' library(ggplot2)
 #' ggplot(mtcars, aes(wt, mpg)) + 
 #'   geom_point() + 
-#'   euiss_mar0()
-euiss_mar0 <- function(t = 0.1, r = 0.1, b = 0.1, l = 0.1) {
+#'   theme_euiss_mar0()
+theme_euiss_mar0 <- function(t = 0.1, r = 0.1, b = 0.1, l = 0.1) {
   ggplot2::theme(plot.margin = ggplot2::margin(t, r, b, l, "mm"))
 }
 
@@ -126,8 +126,8 @@ euiss_mar0 <- function(t = 0.1, r = 0.1, b = 0.1, l = 0.1) {
 #' @examples
 #' ggplot2::ggplot(data = mtcars, ggplot2::aes(wt, mpg, col = cyl)) +
 #'   ggplot2::geom_point() +
-#'   euiss_color_continuous()
-euiss_color_continuous <- function() {
+#'   scale_color_continuous_euiss()
+scale_color_continuous_euiss <- function() {
   pal_seq_b <- get("pal_seq_b", envir = .euiss_env, inherits = FALSE)
   ggplot2::scale_color_gradientn(
     colors = pal_seq_b(4), 
@@ -334,8 +334,8 @@ euiss_force_import_fonts <- function() {
 #' @examples
 #' ggplot2::ggplot(data = mtcars, ggplot2::aes(wt, mpg, col = base::factor(cyl))) +
 #'   ggplot2::geom_point() +
-#'   euiss_color_discrete()
-euiss_color_discrete <- function() {
+#'   scale_color_discrete_euiss()
+scale_color_discrete_euiss <- function() {
   pal_cat <- get("pal_cat", envir = .euiss_env, inherits = FALSE)
   ggplot2::scale_color_manual(
     values = pal_cat(6), 

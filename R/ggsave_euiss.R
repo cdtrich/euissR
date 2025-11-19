@@ -1,13 +1,18 @@
-#' Custom ggplot2::ggsave() with proper font handling
+#' Custom ggplot2::ggsave() with proper font handling for all formats
 #'
+#' Enhanced version that uses showtext for PDF exports (fixes Illustrator font issues)
+#' while maintaining support for SVG, PNG, JPG, and other formats.
+#'
+#' @param plot last plot (default: ggplot2::last_plot())
 #' @param filename name of file, incl. sub-folders, *incl. file extension*
-#' @param plot last plot
 #' @param publication \code{character}, one of \code{book}, \code{brief} or \code{cp}  
 #' @param w \code{character}, one of \code{onecol}, \code{twocol} or \code{full} for width 
-#' @param h \code{numeric} fraction of full height 
+#' @param h \code{numeric} fraction of full height (default: 1)
 #' @param units units of width and height, defaults to \code{mm}
-#' @param dev optional explicit device (e.g. \code{svglite::svglite}); otherwise inferred
-#' @param embed_fonts logical, whether to attempt font embedding for PDF (requires GhostScript)
+#' @param dev optional explicit device; otherwise inferred from extension
+#' @param pdf_method "showtext" (default, better for Illustrator) or "cairo" (standard)
+#' @param embed_fonts logical, whether to attempt font embedding for PDF (requires GhostScript). Only used if pdf_method = "cairo"
+#' @param dpi resolution for raster formats (PNG, JPG). Default 300 for print quality
 #' @param ... other arguments that can be passed to \code{ggplot2::ggsave()}
 #'
 #' @return Parametrized \code{ggsave()}
@@ -15,13 +20,19 @@
 #' @export
 #' 
 #' @examples 
-#' ggplot2::ggplot(data = mtcars, ggplot2::aes(disp, wt, label = wt)) + 
-#'   geom_text_euiss() +
-#'   geom_line_euiss() 
-#'   # NOT RUN 
-#'   # ggsave_euiss("test.pdf", publication = "cp", w = "onecol", h = 1)
-#'   # ggsave_euiss("test.svg", publication = "cp", w = "onecol", h = 1)
-#'   # END NOT RUN 
+#' # Positional parameters (quick export style)
+#' ggplot2::ggplot(mtcars, ggplot2::aes(wt, mpg)) + geom_point_euiss()
+#' ggsave_euiss("plot.pdf", , "cp", "onecol", 1)
+#' 
+#' # Named parameters (explicit)
+#' ggsave_euiss(filename = "plot.pdf", publication = "cp", w = "onecol", h = 1)
+#' 
+#' # Different formats
+#' ggsave_euiss("plot.svg", , "cp", "onecol", 1)
+#' ggsave_euiss("plot.png", , "cp", "onecol", 1, dpi = 600)
+#' 
+#' # Use old cairo method if needed
+#' ggsave_euiss("plot.pdf", , "cp", "onecol", 1, pdf_method = "cairo")
 ggsave_euiss <- function(filename,
                          plot = ggplot2::last_plot(),
                          publication = c("book", "cp", "brief"),
@@ -29,7 +40,9 @@ ggsave_euiss <- function(filename,
                          h = 1,
                          units = "mm",
                          dev = NULL,
-                         embed_fonts = TRUE,
+                         pdf_method = c("showtext", "cairo"),
+                         embed_fonts = FALSE,
+                         dpi = 300,
                          ...) {
   
   # ---------------------------------------------------------------------------
@@ -41,12 +54,13 @@ ggsave_euiss <- function(filename,
   }
   
   publication <- match.arg(publication)
+  pdf_method <- match.arg(pdf_method)
   
   if (is.na(w)) {
     stop("`w` must be set to one of 'onecol', 'twocol', 'full', 'spread', etc.", call. = FALSE)
   }
   
-  # infer extension (used mainly to distinguish pdf vs non-pdf)
+  # infer extension
   ext <- tolower(tools::file_ext(filename))
   if (identical(ext, "")) {
     stop("`filename` must include a file extension, e.g. '.pdf' or '.svg'.", call. = FALSE)
@@ -109,25 +123,12 @@ ggsave_euiss <- function(filename,
     stop("Could not determine unique width/height. Check that `w` is valid for this publication.", call. = FALSE)
   }
   
-  # ---------------------------------------------------------------------------
-  # device selection
-  # ---------------------------------------------------------------------------
-  # Priority:
-  # 1) Use explicit `dev` if provided
-  # 2) PDF: Use "pdf" string (grDevices::pdf - better font support than cairo_pdf)
-  # 3) Otherwise: pass extension string to ggsave
-  #
-  # NOTE: SVG is handled separately to avoid ggplot2/svglite compatibility issues
+  # Convert to inches for devices that need it
+  width_in <- width_loc / 25.4
+  height_in <- height_loc / 25.4
   
-  if (!is.null(dev)) {
-    device <- dev
-  } else if (identical(ext, "pdf")) {
-    # Use string "pdf" for grDevices::pdf (better font support than cairo_pdf)
-    device <- "pdf"
-    # device <- grDevices::cairo_pdf
-  } else {
-    device <- ext
-  }
+  # Get current font from package
+  current_font <- get("txt_family", envir = .euiss_env, inherits = FALSE)
   
   # ---------------------------------------------------------------------------
   # export
@@ -140,14 +141,151 @@ ggsave_euiss <- function(filename,
     )
   )
   
-  if (identical(ext, "svg")) {
-    # For SVG: Call svglite directly to avoid ggsave() compatibility issues
-    # This mirrors the working example: svglite("file.svg"); print(plot); dev.off()
+  # -------------------------------------------------------------------------
+  # PDF EXPORT - Two methods
+  # -------------------------------------------------------------------------
+  if (identical(ext, "pdf")) {
+    
+    if (pdf_method == "showtext") {
+      # -----------------------------------------------------------------
+      # SHOWTEXT METHOD (Default - Better for Illustrator)
+      # -----------------------------------------------------------------
+      
+      if (!requireNamespace("showtext", quietly = TRUE) || 
+          !requireNamespace("sysfonts", quietly = TRUE)) {
+        warning(
+          "Showtext method requires 'showtext' and 'sysfonts' packages.\n",
+          "  Install with: install.packages(c('showtext', 'sysfonts'))\n",
+          "  Falling back to cairo method.",
+          call. = FALSE
+        )
+        pdf_method <- "cairo"
+      } else {
+        message("Using showtext method for PDF (better Illustrator compatibility)")
+        
+        # Enable showtext
+        showtext::showtext_auto()
+        showtext::showtext_opts(dpi = 300)
+        
+        # Register PT Sans Narrow from Google Fonts if not available
+        existing <- sysfonts::font_families()
+        
+        font_to_use <- current_font
+        
+        # If package is using PT Sans variant, ensure it's available
+        if (grepl("PT Sans", current_font, ignore.case = TRUE)) {
+          if (!"PT Sans Narrow" %in% existing) {
+            message("Adding PT Sans Narrow from Google Fonts...")
+            tryCatch({
+              sysfonts::font_add_google("PT Sans Narrow", "PT Sans Narrow")
+              font_to_use <- "PT Sans Narrow"
+            }, error = function(e) {
+              warning("Could not add Google Font. Using package default.", call. = FALSE)
+            })
+          } else {
+            font_to_use <- "PT Sans Narrow"
+          }
+          
+          # Override plot theme to ensure font is used
+          plot <- plot + ggplot2::theme(
+            text = ggplot2::element_text(family = font_to_use)
+          )
+        }
+        
+        # Create PDF with showtext
+        grDevices::cairo_pdf(
+          filename = filename,
+          width = width_in,
+          height = height_in
+        )
+        
+        print(plot)
+        grDevices::dev.off()
+        
+        showtext::showtext_auto(FALSE)
+        
+        message("✓ PDF exported with showtext")
+        message("  Font: ", font_to_use)
+        message("  This should display correctly in Illustrator")
+        
+        return(invisible(filename))
+      }
+    }
+    
+    # -----------------------------------------------------------------
+    # CAIRO METHOD (Fallback or explicit choice)
+    # -----------------------------------------------------------------
+    if (pdf_method == "cairo") {
+      message("Using cairo_pdf method")
+      
+      # Validate font availability for PDF
+      if (current_font != "sans" && requireNamespace("extrafont", quietly = TRUE)) {
+        pdf_fonts <- try(extrafont::fonttable(), silent = TRUE)
+        
+        if (inherits(pdf_fonts, "try-error") || 
+            !current_font %in% pdf_fonts$FamilyName) {
+          message("Loading fonts for PDF device...")
+          try(extrafont::loadfonts(device = "pdf", quiet = TRUE), silent = TRUE)
+        }
+      }
+      
+      # Use cairo_pdf device
+      device <- grDevices::cairo_pdf
+      
+      # Export
+      ggplot2::ggsave(
+        filename    = filename,
+        plot        = plot,
+        width       = width_loc,
+        height      = height_loc,
+        units       = units,
+        device      = device,
+        useDingbats = FALSE,
+        ...
+      )
+      
+      message("✓ PDF exported with cairo_pdf")
+      message("  Font: ", current_font)
+      
+      # Attempt to embed fonts if requested
+      if (embed_fonts) {
+        if (!requireNamespace("extrafont", quietly = TRUE)) {
+          message("Note: extrafont package needed for font embedding. Skipping.")
+        } else {
+          gs_result <- tryCatch({
+            extrafont::embed_fonts(filename, outfile = filename)
+            "success"
+          }, error = function(e) {
+            if (grepl("GhostScript|ghostscript|gs", e$message, ignore.case = TRUE)) {
+              message(
+                "\nNote: GhostScript not found - fonts not embedded.\n",
+                "  PDF will work in Illustrator if PT Sans is installed.\n",
+                "  Only needed if sharing with users who lack PT Sans."
+              )
+              "no_ghostscript"
+            } else {
+              warning("Font embedding failed: ", e$message, call. = FALSE)
+              "error"
+            }
+          })
+          
+          if (identical(gs_result, "success")) {
+            message("✓ Fonts embedded successfully")
+          }
+        }
+      } else {
+        message("  Note: Fonts not embedded (embed_fonts = FALSE)")
+        message("  If Illustrator shows Arial, try pdf_method = 'showtext'")
+      }
+    }
+    
+    # -------------------------------------------------------------------------
+    # SVG EXPORT
+    # -------------------------------------------------------------------------
+  } else if (identical(ext, "svg")) {
     
     if (requireNamespace("svglite", quietly = TRUE)) {
-      # Convert mm to inches for svglite
-      width_in <- width_loc / 25.4
-      height_in <- height_loc / 25.4
+      message("Using svglite for SVG export")
       
       svglite::svglite(
         filename = filename,
@@ -161,13 +299,12 @@ ggsave_euiss <- function(filename,
       message("✓ SVG exported with svglite (custom fonts supported)")
     } else {
       warning(
-        "svglite package not found. Custom fonts will not work in SVG.\n",
+        "svglite package not found. Custom fonts may not work.\n",
         "  Install with: install.packages('svglite')\n",
         "  Falling back to grDevices::svg",
         call. = FALSE
       )
       
-      # Fallback to regular ggsave with grDevices::svg
       ggplot2::ggsave(
         filename = filename,
         plot     = plot,
@@ -179,41 +316,20 @@ ggsave_euiss <- function(filename,
       )
     }
     
-  } else if (identical(ext, "pdf")) {
-    # PDF export with optional font embedding
-    ggplot2::ggsave(
-      filename    = filename,
-      plot        = plot,
-      width       = width_loc,
-      height      = height_loc,
-      units       = units,
-      device      = device,
-      useDingbats = FALSE,
-      ...
-    )
+    # -------------------------------------------------------------------------
+    # RASTER FORMATS (PNG, JPG, etc.)
+    # -------------------------------------------------------------------------
+  } else {
     
-    # Attempt to embed fonts if requested
-    if (embed_fonts) {
-      if (requireNamespace("extrafont", quietly = TRUE)) {
-        tryCatch({
-          extrafont::embed_fonts(filename, outfile = filename)
-          message("✓ Fonts embedded successfully")
-        }, error = function(e) {
-          warning(
-            "Could not embed fonts. This usually means GhostScript is not installed.\n",
-            "  Install from: https://www.ghostscript.com/releases/gsdnld.html\n",
-            "  Or set embed_fonts = FALSE to skip this step.\n",
-            "  Error: ", e$message,
-            call. = FALSE
-          )
-        })
-      } else {
-        message("Note: extrafont package needed for font embedding. Skipping.")
-      }
+    message("Using standard ggsave for ", toupper(ext), " export")
+    
+    # Determine device
+    if (!is.null(dev)) {
+      device <- dev
+    } else {
+      device <- ext
     }
     
-  } else {
-    # Non-PDF, non-SVG export (PNG, JPG, etc.)
     ggplot2::ggsave(
       filename = filename,
       plot     = plot,
@@ -221,7 +337,12 @@ ggsave_euiss <- function(filename,
       height   = height_loc,
       units    = units,
       device   = device,
+      dpi      = dpi,
       ...
     )
+    
+    message("✓ ", toupper(ext), " exported at ", dpi, " dpi")
   }
+  
+  invisible(filename)
 }

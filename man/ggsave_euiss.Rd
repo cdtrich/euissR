@@ -2,7 +2,7 @@
 % Please edit documentation in R/ggsave_euiss.R
 \name{ggsave_euiss}
 \alias{ggsave_euiss}
-\title{Custom ggplot2::ggsave() with proper font handling}
+\title{Custom ggplot2::ggsave() with proper font handling for all formats}
 \usage{
 ggsave_euiss(
   filename,
@@ -12,26 +12,32 @@ ggsave_euiss(
   h = 1,
   units = "mm",
   dev = NULL,
-  embed_fonts = TRUE,
+  pdf_method = c("showtext", "cairo"),
+  embed_fonts = FALSE,
+  dpi = 300,
   ...
 )
 }
 \arguments{
 \item{filename}{name of file, incl. sub-folders, *incl. file extension*}
 
-\item{plot}{last plot}
+\item{plot}{last plot (default: ggplot2::last_plot())}
 
 \item{publication}{\code{character}, one of \code{book}, \code{brief} or \code{cp}}
 
 \item{w}{\code{character}, one of \code{onecol}, \code{twocol} or \code{full} for width}
 
-\item{h}{\code{numeric} fraction of full height}
+\item{h}{\code{numeric} fraction of full height (default: 1)}
 
 \item{units}{units of width and height, defaults to \code{mm}}
 
-\item{dev}{optional explicit device (e.g. \code{svglite::svglite}); otherwise inferred}
+\item{dev}{optional explicit device; otherwise inferred from extension}
 
-\item{embed_fonts}{logical, whether to attempt font embedding for PDF (requires GhostScript)}
+\item{pdf_method}{"showtext" (default, better for Illustrator) or "cairo" (standard)}
+
+\item{embed_fonts}{logical, whether to attempt font embedding for PDF (requires GhostScript). Only used if pdf_method = "cairo"}
+
+\item{dpi}{resolution for raster formats (PNG, JPG). Default 300 for print quality}
 
 \item{...}{other arguments that can be passed to \code{ggplot2::ggsave()}}
 }
@@ -39,14 +45,21 @@ ggsave_euiss(
 Parametrized \code{ggsave()}
 }
 \description{
-Custom ggplot2::ggsave() with proper font handling
+Enhanced version that uses showtext for PDF exports (fixes Illustrator font issues)
+while maintaining support for SVG, PNG, JPG, and other formats.
 }
 \examples{
-ggplot2::ggplot(data = mtcars, ggplot2::aes(disp, wt, label = wt)) + 
-  geom_text_euiss() +
-  geom_line_euiss() 
-  # NOT RUN 
-  # ggsave_euiss("test.pdf", publication = "cp", w = "onecol", h = 1)
-  # ggsave_euiss("test.svg", publication = "cp", w = "onecol", h = 1)
-  # END NOT RUN 
+# Positional parameters (quick export style)
+ggplot2::ggplot(mtcars, ggplot2::aes(wt, mpg)) + geom_point_euiss()
+ggsave_euiss("plot.pdf", , "cp", "onecol", 1)
+
+# Named parameters (explicit)
+ggsave_euiss(filename = "plot.pdf", publication = "cp", w = "onecol", h = 1)
+
+# Different formats
+ggsave_euiss("plot.svg", , "cp", "onecol", 1)
+ggsave_euiss("plot.png", , "cp", "onecol", 1, dpi = 600)
+
+# Use old cairo method if needed
+ggsave_euiss("plot.pdf", , "cp", "onecol", 1, pdf_method = "cairo")
 }
