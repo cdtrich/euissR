@@ -6,6 +6,9 @@
 \usage{
 euiss_get_fonts()
 }
+\value{
+Named list with font settings
+}
 \description{
 Get current font settings
 }

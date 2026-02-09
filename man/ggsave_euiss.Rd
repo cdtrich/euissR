@@ -2,7 +2,7 @@
 % Please edit documentation in R/ggsave_euiss.R
 \name{ggsave_euiss}
 \alias{ggsave_euiss}
-\title{Custom ggplot2::ggsave() with proper font handling for all formats}
+\title{Custom ggplot2::ggsave() with Mode-Aware Font Handling}
 \usage{
 ggsave_euiss(
   filename,
@@ -12,54 +12,65 @@ ggsave_euiss(
   h = 1,
   units = "mm",
   dev = NULL,
-  pdf_method = c("showtext", "cairo"),
-  embed_fonts = FALSE,
+  mode = NULL,
+  embed_fonts = TRUE,
   dpi = 300,
   ...
 )
 }
 \arguments{
-\item{filename}{name of file, incl. sub-folders, *incl. file extension*}
+\item{filename}{Name of file, including sub-folders and file extension.}
 
-\item{plot}{last plot (default: ggplot2::last_plot())}
+\item{plot}{Plot to save. Defaults to last plot.}
 
-\item{publication}{\code{character}, one of \code{book}, \code{brief} or \code{cp}}
+\item{publication}{Character: "book", "cp", or "brief".}
 
-\item{w}{\code{character}, one of \code{onecol}, \code{twocol} or \code{full} for width}
+\item{w}{Character: "onecol", "twocol", "full", "spread", or "narrow" (brief only).}
 
-\item{h}{\code{numeric} fraction of full height (default: 1)}
+\item{h}{Numeric: fraction of full height (0-1).}
 
-\item{units}{units of width and height, defaults to \code{mm}}
+\item{units}{Units for width/height. Default "mm".}
 
-\item{dev}{optional explicit device; otherwise inferred from extension}
+\item{dev}{Optional explicit device function.}
 
-\item{pdf_method}{"showtext" (default, better for Illustrator) or "cairo" (standard)}
+\item{mode}{Override current mode: "draft", "print", or NULL (use current).}
 
-\item{embed_fonts}{logical, whether to attempt font embedding for PDF (requires GhostScript). Only used if pdf_method = "cairo"}
+\item{embed_fonts}{Logical: attempt font embedding for PDF? Default TRUE.}
 
-\item{dpi}{resolution for raster formats (PNG, JPG). Default 300 for print quality}
+\item{dpi}{Resolution for raster formats. Default 300.}
 
-\item{...}{other arguments that can be passed to \code{ggplot2::ggsave()}}
+\item{...}{Additional arguments passed to ggsave().}
 }
 \value{
-Parametrized \code{ggsave()}
+Invisible NULL. Called for side effect of saving file.
 }
 \description{
-Enhanced version that uses showtext for PDF exports (fixes Illustrator font issues)
-while maintaining support for SVG, PNG, JPG, and other formats.
+Custom ggplot2::ggsave() with Mode-Aware Font Handling
+}
+\details{
+This function is mode-aware:
+
+**Draft mode** (PNG, SVG recommended):
+- Uses PT Sans fonts with showtext for reliable rendering
+- Higher DPI (300) for crisp preview
+- White background
+
+**Print mode** (PDF recommended):
+- Uses Helvetica/Arial (reliable embedding)
+- Transparent background
+- No font embedding attempt (fonts convert to outlines in Illustrator anyway)
 }
 \examples{
-# Positional parameters (quick export style)
-ggplot2::ggplot(mtcars, ggplot2::aes(wt, mpg)) + geom_point_euiss()
-ggsave_euiss("plot.pdf", , "cp", "onecol", 1)
+\dontrun{
+library(ggplot2)
+p <- ggplot(mtcars, aes(wt, mpg)) + geom_point()
 
-# Named parameters (explicit)
-ggsave_euiss(filename = "plot.pdf", publication = "cp", w = "onecol", h = 1)
+# Draft mode: PNG for preview
+euiss_mode("draft")
+ggsave_euiss("preview.png", p, publication = "cp", w = "onecol", h = 0.5)
 
-# Different formats
-ggsave_euiss("plot.svg", , "cp", "onecol", 1)
-ggsave_euiss("plot.png", , "cp", "onecol", 1, dpi = 600)
-
-# Use old cairo method if needed
-ggsave_euiss("plot.pdf", , "cp", "onecol", 1, pdf_method = "cairo")
+# Print mode: PDF for Illustrator
+euiss_mode("print")
+ggsave_euiss("for_illustrator.pdf", p, publication = "cp", w = "onecol", h = 0.5)
+}
 }

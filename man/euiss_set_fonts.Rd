@@ -15,6 +15,9 @@ euiss_set_fonts(family = NULL, bold = NULL, height = NULL, label_size = NULL)
 
 \item{label_size}{Text label size}
 }
+\value{
+Invisibly returns updated settings
+}
 \description{
 Set fonts for euissR package
 }

@@ -7,7 +7,6 @@
 .copy_colors_to_namespace()
 }
 \description{
-This allows functions to use colors directly in default parameters.
-For example: geom_col_euiss(fill = teal) works because teal is
-available in the package namespace, not just in .euiss_env.
+Copy colors from .euiss_env to package namespace
 }
+\keyword{internal}

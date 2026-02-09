@@ -9,3 +9,4 @@
 \description{
 Enhanced font initialization with better error handling
 }
+\keyword{internal}

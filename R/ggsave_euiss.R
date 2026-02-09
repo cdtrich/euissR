@@ -1,38 +1,47 @@
-#' Custom ggplot2::ggsave() with proper font handling for all formats
+#' Custom ggplot2::ggsave() with Mode-Aware Font Handling
 #'
-#' Enhanced version that uses showtext for PDF exports (fixes Illustrator font issues)
-#' while maintaining support for SVG, PNG, JPG, and other formats.
+#' @param filename Name of file, including sub-folders and file extension.
+#' @param plot Plot to save. Defaults to last plot.
+#' @param publication Character: "book", "cp", or "brief".
+#' @param w Character: "onecol", "twocol", "full", "spread", or "narrow" (brief only).
+#' @param h Numeric: fraction of full height (0-1).
+#' @param units Units for width/height. Default "mm".
+#' @param dev Optional explicit device function.
+#' @param mode Override current mode: "draft", "print", or NULL (use current).
+#' @param embed_fonts Logical: attempt font embedding for PDF? Default TRUE.
+#' @param dpi Resolution for raster formats. Default 300.
+#' @param ... Additional arguments passed to ggsave().
 #'
-#' @param plot last plot (default: ggplot2::last_plot())
-#' @param filename name of file, incl. sub-folders, *incl. file extension*
-#' @param publication \code{character}, one of \code{book}, \code{brief} or \code{cp}  
-#' @param w \code{character}, one of \code{onecol}, \code{twocol} or \code{full} for width 
-#' @param h \code{numeric} fraction of full height (default: 1)
-#' @param units units of width and height, defaults to \code{mm}
-#' @param dev optional explicit device; otherwise inferred from extension
-#' @param pdf_method "showtext" (default, better for Illustrator) or "cairo" (standard)
-#' @param embed_fonts logical, whether to attempt font embedding for PDF (requires GhostScript). Only used if pdf_method = "cairo"
-#' @param dpi resolution for raster formats (PNG, JPG). Default 300 for print quality
-#' @param ... other arguments that can be passed to \code{ggplot2::ggsave()}
-#'
-#' @return Parametrized \code{ggsave()}
+#' @return Invisible NULL. Called for side effect of saving file.
 #' @importFrom magrittr %>%
 #' @export
-#' 
-#' @examples 
-#' # Positional parameters (quick export style)
-#' ggplot2::ggplot(mtcars, ggplot2::aes(wt, mpg)) + geom_point_euiss()
-#' ggsave_euiss("plot.pdf", , "cp", "onecol", 1)
-#' 
-#' # Named parameters (explicit)
-#' ggsave_euiss(filename = "plot.pdf", publication = "cp", w = "onecol", h = 1)
-#' 
-#' # Different formats
-#' ggsave_euiss("plot.svg", , "cp", "onecol", 1)
-#' ggsave_euiss("plot.png", , "cp", "onecol", 1, dpi = 600)
-#' 
-#' # Use old cairo method if needed
-#' ggsave_euiss("plot.pdf", , "cp", "onecol", 1, pdf_method = "cairo")
+#'
+#' @details
+#' This function is mode-aware:
+#'
+#' **Draft mode** (PNG, SVG recommended):
+#' - Uses PT Sans fonts with showtext for reliable rendering
+#' - Higher DPI (300) for crisp preview
+#' - White background
+#'
+#' **Print mode** (PDF recommended):
+#' - Uses Helvetica/Arial (reliable embedding)
+#' - Transparent background
+#' - No font embedding attempt (fonts convert to outlines in Illustrator anyway)
+#'
+#' @examples
+#' \dontrun{
+#' library(ggplot2)
+#' p <- ggplot(mtcars, aes(wt, mpg)) + geom_point()
+#'
+#' # Draft mode: PNG for preview
+#' euiss_mode("draft")
+#' ggsave_euiss("preview.png", p, publication = "cp", w = "onecol", h = 0.5)
+#'
+#' # Print mode: PDF for Illustrator
+#' euiss_mode("print")
+#' ggsave_euiss("for_illustrator.pdf", p, publication = "cp", w = "onecol", h = 0.5)
+#' }
 ggsave_euiss <- function(filename,
                          plot = ggplot2::last_plot(),
                          publication = c("book", "cp", "brief"),
@@ -40,309 +49,370 @@ ggsave_euiss <- function(filename,
                          h = 1,
                          units = "mm",
                          dev = NULL,
-                         pdf_method = c("showtext", "cairo"),
-                         embed_fonts = FALSE,
+                         mode = NULL,
+                         embed_fonts = TRUE,
                          dpi = 300,
                          ...) {
   
   # ---------------------------------------------------------------------------
-  # basic argument checks
+  # Input Validation
   # ---------------------------------------------------------------------------
   
   if (!is.character(filename) || length(filename) != 1L) {
-    stop("`filename` must be a single string (length-1 character vector).", call. = FALSE)
+    stop("`filename` must be a single string.", call. = FALSE)
   }
   
   publication <- match.arg(publication)
-  pdf_method <- match.arg(pdf_method)
   
   if (is.na(w)) {
-    stop("`w` must be set to one of 'onecol', 'twocol', 'full', 'spread', etc.", call. = FALSE)
+    stop("`w` must be set to one of: 'onecol', 'twocol', 'full', 'spread'", 
+         call. = FALSE)
   }
   
-  # infer extension
   ext <- tolower(tools::file_ext(filename))
   if (identical(ext, "")) {
-    stop("`filename` must include a file extension, e.g. '.pdf' or '.svg'.", call. = FALSE)
+    stop("`filename` must include a file extension (e.g., '.pdf', '.png').", 
+         call. = FALSE)
   }
   
   # ---------------------------------------------------------------------------
-  # output dimensions
+  # Get Current Mode
   # ---------------------------------------------------------------------------
   
-  mm_book <- tibble::tibble(
-    dim = c("height", "onecol", "twocol", "full", "spread"),
-    mm  = c(181.25, 60, 108, 135, 135 * 2)
-  )
-  
-  mm_cp <- tibble::tibble(
-    dim = c("height", "onecol", "twocol", "full", "spread"),
-    mm  = c(221.9, 65.767, 140, 180, 180 * 2)
-  )
-  
-  mm_brief <- tibble::tibble(
-    dim = c("height", "onecol", "twocol", "full", "spread", "narrow"),
-    mm  = c(258.233, 85, 180, 210, 210 * 2, 56.1)
-  )
-  
-  if (publication == "book") {
-    width_loc <- mm_book %>%
-      dplyr::filter(.$dim == w) %>%
-      dplyr::pull(2)
-    
-    height_loc <- mm_book %>%
-      dplyr::filter(.$dim == "height") %>%
-      dplyr::mutate(mm = .$mm * h) %>%
-      dplyr::pull(2)
-    
-  } else if (publication == "cp") {
-    width_loc <- mm_cp %>%
-      dplyr::filter(.$dim == w) %>%
-      dplyr::pull(2)
-    
-    height_loc <- mm_cp %>%
-      dplyr::filter(.$dim == "height") %>%
-      dplyr::mutate(mm = .$mm * h) %>%
-      dplyr::pull(2)
-    
-  } else if (publication == "brief") {
-    width_loc <- mm_brief %>%
-      dplyr::filter(.$dim == w) %>%
-      dplyr::pull(2)
-    
-    height_loc <- mm_brief %>%
-      dplyr::filter(.$dim == "height") %>%
-      dplyr::mutate(mm = .$mm * h) %>%
-      dplyr::pull(2)
-    
+  if (is.null(mode)) {
+    mode <- tryCatch(
+      get("euiss_current_mode", envir = .euiss_env, inherits = FALSE),
+      error = function(e) "draft"
+    )
   } else {
-    stop("No known publication format!", call. = FALSE)
+    mode <- match.arg(mode, choices = c("draft", "print"))
   }
   
-  if (length(width_loc) != 1L || length(height_loc) != 1L) {
-    stop("Could not determine unique width/height. Check that `w` is valid for this publication.", call. = FALSE)
+  # ---------------------------------------------------------------------------
+  # Calculate Dimensions
+  # ---------------------------------------------------------------------------
+  
+  dims <- .get_publication_dims(publication)
+  
+  width_loc <- dims[[w]]
+  if (is.null(width_loc)) {
+    valid_widths <- names(dims)[names(dims) != "height"]
+    stop("`w` = '", w, "' not valid for publication '", publication, "'. ",
+         "Options: ", paste(valid_widths, collapse = ", "), call. = FALSE)
   }
   
-  # Convert to inches for devices that need it
-  width_in <- width_loc / 25.4
-  height_in <- height_loc / 25.4
-  
-  # Get current font from package
-  current_font <- get("txt_family", envir = .euiss_env, inherits = FALSE)
+  height_loc <- dims$height * h
   
   # ---------------------------------------------------------------------------
-  # export
+  # Mode-Specific Export
   # ---------------------------------------------------------------------------
   
-  message(
-    paste0(
-      "Exporting to ", ext, ": width = ", width_loc,
-      ", height = ", height_loc, " mm"
+  message(sprintf("Exporting [%s mode] to %s: %.1f x %.1f mm",
+                  toupper(mode), ext, width_loc, height_loc))
+  
+  if (mode == "draft") {
+    .export_draft(filename, plot, width_loc, height_loc, units, ext, dev, dpi, ...)
+  } else {
+    .export_print(filename, plot, width_loc, height_loc, units, ext, dev, 
+                  embed_fonts, dpi, ...)
+  }
+  
+  invisible(NULL)
+}
+
+# -----------------------------------------------------------------------------
+# Helper: Get Publication Dimensions
+# -----------------------------------------------------------------------------
+
+.get_publication_dims <- function(publication) {
+  switch(publication,
+    "book" = list(
+      height = 181.25,
+      onecol = 60,        # called "half" in some places
+      twocol = 108,       # called "col" in some places
+      full = 135,
+      spread = 135 * 2
+    ),
+    "cp" = list(
+      height = 221.9,
+      onecol = 65.767,
+      twocol = 140,
+      full = 180,
+      spread = 180 * 2
+    ),
+    "brief" = list(
+      height = 258.233,
+      narrow = 56.1,
+      onecol = 85,
+      twocol = 180,
+      full = 210,
+      spread = 210 * 2
     )
   )
+}
+
+# -----------------------------------------------------------------------------
+# Helper: Draft Mode Export
+# -----------------------------------------------------------------------------
+
+.export_draft <- function(filename, plot, width, height, units, ext, dev, dpi, ...) {
   
-  # -------------------------------------------------------------------------
-  # PDF EXPORT - Two methods
-  # -------------------------------------------------------------------------
-  if (identical(ext, "pdf")) {
+  # For draft mode, showtext provides reliable font rendering
+  use_showtext <- requireNamespace("showtext", quietly = TRUE)
+  
+  if (use_showtext) {
+    # Ensure PT Sans is loaded via Google Fonts
+    .ensure_showtext_fonts()
+    showtext::showtext_auto()
+  }
+  
+  if (ext == "svg") {
+    .export_svg(filename, plot, width, height, ...)
     
-    if (pdf_method == "showtext") {
-      # -----------------------------------------------------------------
-      # SHOWTEXT METHOD (Default - Better for Illustrator)
-      # -----------------------------------------------------------------
-      
-      if (!requireNamespace("showtext", quietly = TRUE) || 
-          !requireNamespace("sysfonts", quietly = TRUE)) {
-        warning(
-          "Showtext method requires 'showtext' and 'sysfonts' packages.\n",
-          "  Install with: install.packages(c('showtext', 'sysfonts'))\n",
-          "  Falling back to cairo method.",
-          call. = FALSE
-        )
-        pdf_method <- "cairo"
-      } else {
-        message("Using showtext method for PDF (better Illustrator compatibility)")
-        
-        # Enable showtext
-        showtext::showtext_auto()
-        showtext::showtext_opts(dpi = 300)
-        
-        # Register PT Sans Narrow from Google Fonts if not available
-        existing <- sysfonts::font_families()
-        
-        font_to_use <- current_font
-        
-        # If package is using PT Sans variant, ensure it's available
-        if (grepl("PT Sans", current_font, ignore.case = TRUE)) {
-          if (!"PT Sans Narrow" %in% existing) {
-            message("Adding PT Sans Narrow from Google Fonts...")
-            tryCatch({
-              sysfonts::font_add_google("PT Sans Narrow", "PT Sans Narrow")
-              font_to_use <- "PT Sans Narrow"
-            }, error = function(e) {
-              warning("Could not add Google Font. Using package default.", call. = FALSE)
-            })
-          } else {
-            font_to_use <- "PT Sans Narrow"
-          }
-          
-          # Override plot theme to ensure font is used
-          plot <- plot + ggplot2::theme(
-            text = ggplot2::element_text(family = font_to_use)
-          )
-        }
-        
-        # Create PDF with showtext
-        grDevices::cairo_pdf(
-          filename = filename,
-          width = width_in,
-          height = height_in
-        )
-        
-        print(plot)
-        grDevices::dev.off()
-        
-        showtext::showtext_auto(FALSE)
-        
-        message("✓ PDF exported with showtext")
-        message("  Font: ", font_to_use)
-        message("  This should display correctly in Illustrator")
-        
-        return(invisible(filename))
-      }
-    }
+  } else if (ext == "pdf") {
+    # For draft PDF, we still try to make it look good
+    # But recommend PNG/SVG for sharing
+    message("Tip: For draft sharing, PNG or SVG often work better than PDF.")
     
-    # -----------------------------------------------------------------
-    # CAIRO METHOD (Fallback or explicit choice)
-    # -----------------------------------------------------------------
-    if (pdf_method == "cairo") {
-      message("Using cairo_pdf method")
-      
-      # Validate font availability for PDF
-      if (current_font != "sans" && requireNamespace("extrafont", quietly = TRUE)) {
-        pdf_fonts <- try(extrafont::fonttable(), silent = TRUE)
-        
-        if (inherits(pdf_fonts, "try-error") || 
-            !current_font %in% pdf_fonts$FamilyName) {
-          message("Loading fonts for PDF device...")
-          try(extrafont::loadfonts(device = "pdf", quiet = TRUE), silent = TRUE)
-        }
-      }
-      
-      # Use cairo_pdf device
-      device <- grDevices::cairo_pdf
-      
-      # Export
-      ggplot2::ggsave(
-        filename    = filename,
-        plot        = plot,
-        width       = width_loc,
-        height      = height_loc,
-        units       = units,
-        device      = device,
-        useDingbats = FALSE,
-        ...
-      )
-      
-      message("✓ PDF exported with cairo_pdf")
-      message("  Font: ", current_font)
-      
-      # Attempt to embed fonts if requested
-      if (embed_fonts) {
-        if (!requireNamespace("extrafont", quietly = TRUE)) {
-          message("Note: extrafont package needed for font embedding. Skipping.")
-        } else {
-          gs_result <- tryCatch({
-            extrafont::embed_fonts(filename, outfile = filename)
-            "success"
-          }, error = function(e) {
-            if (grepl("GhostScript|ghostscript|gs", e$message, ignore.case = TRUE)) {
-              message(
-                "\nNote: GhostScript not found - fonts not embedded.\n",
-                "  PDF will work in Illustrator if PT Sans is installed.\n",
-                "  Only needed if sharing with users who lack PT Sans."
-              )
-              "no_ghostscript"
-            } else {
-              warning("Font embedding failed: ", e$message, call. = FALSE)
-              "error"
-            }
-          })
-          
-          if (identical(gs_result, "success")) {
-            message("✓ Fonts embedded successfully")
-          }
-        }
-      } else {
-        message("  Note: Fonts not embedded (embed_fonts = FALSE)")
-        message("  If Illustrator shows Arial, try pdf_method = 'showtext'")
-      }
-    }
+    # Convert mm to inches for cairo_pdf
+    width_in <- width / 25.4
+    height_in <- height / 25.4
     
-    # -------------------------------------------------------------------------
-    # SVG EXPORT
-    # -------------------------------------------------------------------------
-  } else if (identical(ext, "svg")) {
-    
-    if (requireNamespace("svglite", quietly = TRUE)) {
-      message("Using svglite for SVG export")
-      
-      svglite::svglite(
-        filename = filename,
-        width = width_in,
-        height = height_in,
-        ...
-      )
+    if (use_showtext) {
+      grDevices::cairo_pdf(filename, width = width_in, height = height_in)
+      showtext::showtext_begin()
       print(plot)
+      showtext::showtext_end()
       grDevices::dev.off()
-      
-      message("✓ SVG exported with svglite (custom fonts supported)")
     } else {
-      warning(
-        "svglite package not found. Custom fonts may not work.\n",
-        "  Install with: install.packages('svglite')\n",
-        "  Falling back to grDevices::svg",
-        call. = FALSE
-      )
-      
       ggplot2::ggsave(
         filename = filename,
-        plot     = plot,
-        width    = width_loc,
-        height   = height_loc,
-        units    = units,
-        device   = grDevices::svg,
+        plot = plot,
+        width = width,
+        height = height,
+        units = units,
+        device = grDevices::cairo_pdf,
         ...
       )
     }
     
-    # -------------------------------------------------------------------------
-    # RASTER FORMATS (PNG, JPG, etc.)
-    # -------------------------------------------------------------------------
   } else {
-    
-    message("Using standard ggsave for ", toupper(ext), " export")
-    
-    # Determine device
-    if (!is.null(dev)) {
-      device <- dev
-    } else {
-      device <- ext
+    # PNG, JPG, etc.
+    if (use_showtext) {
+      # Use showtext for reliable font rendering
+      showtext::showtext_auto()
     }
     
     ggplot2::ggsave(
       filename = filename,
-      plot     = plot,
-      width    = width_loc,
-      height   = height_loc,
-      units    = units,
-      device   = device,
-      dpi      = dpi,
+      plot = plot,
+      width = width,
+      height = height,
+      units = units,
+      dpi = dpi,
+      bg = "white",
       ...
     )
     
-    message("✓ ", toupper(ext), " exported at ", dpi, " dpi")
+    if (use_showtext) {
+      showtext::showtext_auto(FALSE)
+    }
   }
   
-  invisible(filename)
+  message("✓ Draft export complete: ", filename)
+}
+
+# -----------------------------------------------------------------------------
+# Helper: Print Mode Export  
+# -----------------------------------------------------------------------------
+
+.export_print <- function(filename, plot, width, height, units, ext, dev, 
+                          embed_fonts, dpi, ...) {
+  
+  # Print mode uses system fonts (Helvetica/Arial) - no showtext needed
+  
+  if (ext == "pdf") {
+    # This is the primary print mode format
+    
+    # Convert mm to inches
+    width_in <- width / 25.4
+    height_in <- height / 25.4
+    
+    if (!is.null(dev)) {
+      # Use explicit device
+      ggplot2::ggsave(
+        filename = filename,
+        plot = plot,
+        width = width,
+        height = height,
+        units = units,
+        device = dev,
+        ...
+      )
+    } else {
+      # Use cairo_pdf for better text handling
+      grDevices::cairo_pdf(
+        filename = filename,
+        width = width_in,
+        height = height_in,
+        family = if (.Platform$OS.type == "windows") "Arial" else "Helvetica"
+      )
+      print(plot)
+      grDevices::dev.off()
+    }
+    
+    message("✓ Print PDF ready for Illustrator: ", filename)
+    message("  Note: Convert text to outlines in Illustrator if sharing further")
+    
+  } else if (ext == "svg") {
+    .export_svg(filename, plot, width, height, ...)
+    
+  } else {
+    # Other formats (PNG, etc.) - less common for print workflow
+    ggplot2::ggsave(
+      filename = filename,
+      plot = plot,
+      width = width,
+      height = height,
+      units = units,
+      dpi = dpi,
+      bg = "transparent",  # Transparent for print compositing
+      ...
+    )
+  }
+  
+  message("✓ Print export complete: ", filename)
+}
+
+# -----------------------------------------------------------------------------
+# Helper: SVG Export
+# -----------------------------------------------------------------------------
+
+.export_svg <- function(filename, plot, width, height, ...) {
+  
+  # Convert mm to inches
+  width_in <- width / 25.4
+  height_in <- height / 25.4
+  
+  if (requireNamespace("svglite", quietly = TRUE)) {
+    svglite::svglite(
+      filename = filename,
+      width = width_in,
+      height = height_in
+    )
+    print(plot)
+    grDevices::dev.off()
+    message("✓ SVG exported with svglite (custom fonts preserved)")
+  } else {
+    warning(
+      "svglite not found. Install with: install.packages('svglite')\n",
+      "Falling back to grDevices::svg (fonts may not render correctly)",
+      call. = FALSE
+    )
+    grDevices::svg(
+      filename = filename,
+      width = width_in,
+      height = height_in
+    )
+    print(plot)
+    grDevices::dev.off()
+  }
+}
+
+# -----------------------------------------------------------------------------
+# Helper: Ensure showtext fonts are loaded
+# -----------------------------------------------------------------------------
+
+.ensure_showtext_fonts <- function() {
+  
+  if (!requireNamespace("showtext", quietly = TRUE)) return()
+  if (!requireNamespace("sysfonts", quietly = TRUE)) return()
+  
+  # Check if PT Sans Narrow is already loaded
+  loaded_fonts <- sysfonts::font_families()
+  
+  if (!"PT Sans Narrow" %in% loaded_fonts) {
+    tryCatch({
+      sysfonts::font_add_google("PT Sans Narrow", "PT Sans Narrow")
+      message("Loaded PT Sans Narrow from Google Fonts")
+    }, error = function(e) {
+      # Silently fall back to sans
+    })
+  }
+}
+
+# -----------------------------------------------------------------------------
+# Convenience Wrappers
+# -----------------------------------------------------------------------------
+
+#' Quick Draft Export (PNG)
+#'
+#' Convenience function for common draft workflow: export PNG for sharing.
+#'
+#' @inheritParams ggsave_euiss
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' p <- ggplot(mtcars, aes(wt, mpg)) + geom_point()
+#' euiss_save_draft(p, "preview", publication = "cp", w = "onecol", h = 0.5)
+#' }
+euiss_save_draft <- function(plot = ggplot2::last_plot(),
+                             filename = "draft",
+                             publication = "cp",
+                             w = "onecol",
+                             h = 0.5,
+                             dpi = 300,
+                             ...) {
+  
+  # Add .png extension if missing
+  if (!grepl("\\.png$", filename, ignore.case = TRUE)) {
+    filename <- paste0(filename, ".png")
+  }
+  
+  ggsave_euiss(
+    filename = filename,
+    plot = plot,
+    publication = publication,
+    w = w,
+    h = h,
+    mode = "draft",
+    dpi = dpi,
+    ...
+  )
+}
+
+#' Quick Print Export (PDF)
+#'
+#' Convenience function for print workflow: export PDF for Illustrator.
+#'
+#' @inheritParams ggsave_euiss
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' p <- ggplot(mtcars, aes(wt, mpg)) + geom_point()
+#' euiss_save_print(p, "for_illustrator", publication = "cp", w = "onecol", h = 0.5)
+#' }
+euiss_save_print <- function(plot = ggplot2::last_plot(),
+                             filename = "print",
+                             publication = "cp",
+                             w = "onecol",
+                             h = 0.5,
+                             ...) {
+  
+  # Add .pdf extension if missing
+  if (!grepl("\\.pdf$", filename, ignore.case = TRUE)) {
+    filename <- paste0(filename, ".pdf")
+  }
+  
+  ggsave_euiss(
+    filename = filename,
+    plot = plot,
+    publication = publication,
+    w = w,
+    h = h,
+    mode = "print",
+    ...
+  )
 }
