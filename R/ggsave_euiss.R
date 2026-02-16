@@ -244,8 +244,7 @@ ggsave_euiss <- function(filename,
       grDevices::cairo_pdf(
         filename = filename,
         width = width_in,
-        height = height_in,
-        family = if (.Platform$OS.type == "windows") "Arial" else "Helvetica"
+        height = height_in
       )
       print(plot)
       grDevices::dev.off()
