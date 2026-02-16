@@ -170,31 +170,17 @@ ggsave_euiss <- function(filename,
     .export_svg(filename, plot, width, height, ...)
     
   } else if (ext == "pdf") {
-    # For draft PDF, we still try to make it look good
-    # But recommend PNG/SVG for sharing
     message("Tip: For draft sharing, PNG or SVG often work better than PDF.")
     
-    # Convert mm to inches for cairo_pdf
     width_in <- width / 25.4
     height_in <- height / 25.4
     
-    if (use_showtext) {
-      grDevices::cairo_pdf(filename, width = width_in, height = height_in)
-      showtext::showtext_begin()
-      print(plot)
-      showtext::showtext_end()
-      grDevices::dev.off()
-    } else {
-      ggplot2::ggsave(
-        filename = filename,
-        plot = plot,
-        width = width,
-        height = height,
-        units = units,
-        device = grDevices::cairo_pdf,
-        ...
-      )
-    }
+    # Always disable showtext for PDF (preserves editable text)
+    if (use_showtext) showtext::showtext_auto(FALSE)
+    
+    grDevices::cairo_pdf(filename, width = width_in, height = height_in)
+    print(plot)
+    grDevices::dev.off()
     
   } else {
     # PNG, JPG, etc.
@@ -230,6 +216,10 @@ ggsave_euiss <- function(filename,
                           embed_fonts, dpi, ...) {
   
   # Print mode uses system fonts (Helvetica/Arial) - no showtext needed
+  # Ensure showtext is off for print mode (editable text in PDF)
+  if (requireNamespace("showtext", quietly = TRUE)) {
+    showtext::showtext_auto(FALSE)
+  }
   
   if (ext == "pdf") {
     # This is the primary print mode format
